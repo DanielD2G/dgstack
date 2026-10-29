@@ -1,0 +1,16 @@
+{
+  "_comment": "Seconds per simulated command, roughly what these take against real servers. First match wins. `ssh` is added once per ssh invocation.",
+  "ssh": 0.8,
+  "default": 0.5,
+  "rules": [
+    ["\\blogs\\b|journalctl|access\\.log|error\\.log|filter-log-events", 5.0],
+    ["^du\\b", 6.0],
+    ["^docker\\s+(stats|system\\s+df)", 2.5],
+    ["^docker\\s+(service\\s+(ls|ps)|ps|node|inspect|service\\s+inspect|container)", 1.5],
+    ["^aws\\s", 2.0],
+    ["psql|pg_isready|redis-cli", 1.2],
+    ["^(curl|wget|openssl|nc)\\b", 1.0],
+    ["^(dig|host|nslookup)\\b", 0.3],
+    ["^(df|free|date|uptime|hostname|ip|ls|cat|nproc)\\b", 0.2]
+  ]
+}

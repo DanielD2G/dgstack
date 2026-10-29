@@ -1,0 +1,195 @@
+#!/usr/bin/env python3
+"""Writes sim.json for the swarm-pool fixture. Times are UTC; the incident
+starts with the worker redeploy at 16:58Z (13:58 in Buenos Aires)."""
+import json
+import os
+
+MUTATING = [
+    {"id": "mut-docker", "mutating": True,
+     "match": r"^docker\s+(service\s+(update|scale|rollback|rm|create)|restart|stop|kill|rm|rmi|start|stack\s+(deploy|rm|up)|system\s+prune|compose\s+(up|down|restart|stop))\b",
+     "out": ["shop_worker", "overall progress: 4 out of 4 tasks", "verify: Service converged"]},
+    {"id": "mut-systemctl", "mutating": True, "match": r"^systemctl\s+(restart|stop|start|reload)", "out": ""},
+    {"id": "mut-rm", "mutating": True, "match": r"^(rm|truncate|mv)\s", "out": ""},
+    {"id": "mut-sql", "mutating": True,
+     "match": r"(pg_terminate_backend|pg_cancel_backend|ALTER\s+SYSTEM|ALTER\s+DATABASE|DROP\s|DELETE\s+FROM|TRUNCATE|UPDATE\s+\w+\s+SET|pg_reload_conf)",
+     "out": ["pg_terminate_backend", "----------------------", " t", "(1 row)"]},
+]
+
+api_logs = []
+for m in range(40, 59, 3):
+    api_logs.append(f"2026-10-29T16:{m:02d}:0{m%7}.114Z shop_api.1.q8w2e4r6t8y0@prod-1 | {{\"level\":\"info\",\"msg\":\"POST /api/checkout 200\",\"ms\":{80+m}}}")
+api_logs += [
+    "2026-10-29T16:59:31.552Z shop_api.2.z1x3c5v7b9n1@prod-1 | {\"level\":\"error\",\"msg\":\"pg pool connect failed\",\"err\":\"sorry, too many clients already\",\"code\":\"53300\"}",
+    "2026-10-29T16:59:31.553Z shop_api.2.z1x3c5v7b9n1@prod-1 | {\"level\":\"error\",\"msg\":\"POST /api/checkout 500\",\"ms\":12}",
+    "2026-10-29T16:59:44.020Z shop_api.1.q8w2e4r6t8y0@prod-1 | {\"level\":\"info\",\"msg\":\"POST /api/checkout 200\",\"ms\":91}",
+    "2026-10-29T17:00:02.871Z shop_api.2.z1x3c5v7b9n1@prod-1 | {\"level\":\"error\",\"msg\":\"pg pool connect failed\",\"err\":\"sorry, too many clients already\",\"code\":\"53300\"}",
+    "2026-10-29T17:00:31.004Z shop_api.2.z1x3c5v7b9n1@prod-1 | {\"level\":\"fatal\",\"msg\":\"health: database unreachable for 30s, exiting\"}",
+    "2026-10-29T17:00:44.310Z shop_api.2.m4n6b8v0c2x4@prod-1 | {\"level\":\"info\",\"msg\":\"shop-api 1.14.2 listening on :4000\"}",
+    "2026-10-29T17:14:09.662Z shop_api.1.q8w2e4r6t8y0@prod-1 | {\"level\":\"error\",\"msg\":\"pg pool connect failed\",\"err\":\"sorry, too many clients already\",\"code\":\"53300\"}",
+    "2026-10-29T17:14:39.700Z shop_api.1.q8w2e4r6t8y0@prod-1 | {\"level\":\"fatal\",\"msg\":\"health: database unreachable for 30s, exiting\"}",
+    "2026-10-29T17:14:52.118Z shop_api.1.p0o9i8u7y6t5@prod-1 | {\"level\":\"info\",\"msg\":\"shop-api 1.14.2 listening on :4000\"}",
+    "2026-10-29T17:21:17.402Z shop_api.1.p0o9i8u7y6t5@prod-1 | {\"level\":\"info\",\"msg\":\"POST /api/checkout 200\",\"ms\":104}",
+    "2026-10-29T17:36:55.090Z shop_api.1.p0o9i8u7y6t5@prod-1 | {\"level\":\"error\",\"msg\":\"pg pool connect failed\",\"err\":\"sorry, too many clients already\",\"code\":\"53300\"}",
+    "2026-10-29T17:37:25.120Z shop_api.1.p0o9i8u7y6t5@prod-1 | {\"level\":\"fatal\",\"msg\":\"health: database unreachable for 30s, exiting\"}",
+    "2026-10-29T17:37:38.404Z shop_api.1.h2g4f6d8s0a2@prod-1 | {\"level\":\"info\",\"msg\":\"shop-api 1.14.2 listening on :4000\"}",
+]
+
+worker_logs = []
+for r in range(1, 5):
+    worker_logs.append(f"2026-10-29T16:58:4{r}.010Z shop_worker.{r}.w{r}k3r5t7y9u@prod-1 | worker 2.3.0 starting (DB_POOL_SIZE=40, JOB_CONCURRENCY=40)")
+worker_logs += [
+    "2026-10-29T16:58:46.220Z shop_worker.1.w1k3r5t7y9u@prod-1 | catalog-import: batch started, 18402 products, 40 parallel jobs",
+    "2026-10-29T16:58:52.871Z shop_worker.4.w4k3r5t7y9u@prod-1 | pool: 37/40 connected, 3 failed (sorry, too many clients already), retrying in 5s",
+    "2026-10-29T16:58:58.004Z shop_worker.4.w4k3r5t7y9u@prod-1 | pool: 40/40 connected",
+    "2026-10-29T17:12:30.510Z shop_worker.2.w2k3r5t7y9u@prod-1 | catalog-import: 4100/18402 products",
+    "2026-10-29T17:31:02.333Z shop_worker.3.w3k3r5t7y9u@prod-1 | catalog-import: 9020/18402 products",
+    "2026-10-29T17:39:48.120Z shop_worker.1.w1k3r5t7y9u@prod-1 | catalog-import: 10880/18402 products",
+]
+
+pg_logs = [
+    "2026-10-29 16:40:12.004 UTC [27] LOG:  checkpoint starting: time",
+    "2026-10-29 16:40:19.881 UTC [27] LOG:  checkpoint complete: wrote 812 buffers (5.0%)",
+    "2026-10-29 16:58:52.330 UTC [3311] FATAL:  sorry, too many clients already",
+    "2026-10-29 16:58:52.331 UTC [3312] FATAL:  sorry, too many clients already",
+    "2026-10-29 16:58:52.402 UTC [3313] FATAL:  sorry, too many clients already",
+    "2026-10-29 16:59:31.550 UTC [3420] FATAL:  sorry, too many clients already",
+    "2026-10-29 17:00:02.870 UTC [3466] FATAL:  sorry, too many clients already",
+    "2026-10-29 17:10:12.010 UTC [27] LOG:  checkpoint starting: time",
+    "2026-10-29 17:14:09.660 UTC [4102] FATAL:  sorry, too many clients already",
+    "2026-10-29 17:36:55.088 UTC [5530] FATAL:  sorry, too many clients already",
+    "2026-10-29 17:39:10.441 UTC [5711] FATAL:  sorry, too many clients already",
+]
+
+traefik_logs = [
+    "2026-10-29T16:57:58Z 181.23.4.77 - - \"POST /api/checkout HTTP/2.0\" 200 512 \"-\" \"-\" 88412 \"shop-api@docker\" \"http://10.0.1.14:4000\" 91ms",
+    "2026-10-29T16:59:31Z 190.18.200.4 - - \"POST /api/checkout HTTP/2.0\" 500 61 \"-\" \"-\" 88501 \"shop-api@docker\" \"http://10.0.1.15:4000\" 14ms",
+    "2026-10-29T17:00:33Z 181.23.4.77 - - \"POST /api/checkout HTTP/2.0\" 502 11 \"-\" \"-\" 88550 \"shop-api@docker\" \"http://10.0.1.15:4000\" 2ms",
+    "2026-10-29T17:00:35Z 200.45.12.9 - - \"POST /api/checkout HTTP/2.0\" 502 11 \"-\" \"-\" 88553 \"shop-api@docker\" \"http://10.0.1.15:4000\" 1ms",
+    "2026-10-29T17:02:10Z 200.45.12.9 - - \"POST /api/checkout HTTP/2.0\" 200 512 \"-\" \"-\" 88601 \"shop-api@docker\" \"http://10.0.1.14:4000\" 97ms",
+    "2026-10-29T17:14:41Z 186.12.33.2 - - \"POST /api/checkout HTTP/2.0\" 502 11 \"-\" \"-\" 89120 \"shop-api@docker\" \"http://10.0.1.14:4000\" 1ms",
+    "2026-10-29T17:37:27Z 181.23.4.77 - - \"POST /api/checkout HTTP/2.0\" 502 11 \"-\" \"-\" 90233 \"shop-api@docker\" \"http://10.0.1.16:4000\" 2ms",
+    "2026-10-29T17:38:02Z 181.23.4.77 - - \"GET /products HTTP/2.0\" 200 18233 \"-\" \"-\" 90240 \"shop-web@docker\" \"http://10.0.1.20:3000\" 140ms",
+]
+
+rules = MUTATING + [
+    {"id": "date", "match": r"^date\b", "out": "Thu Oct 29 17:41:07 UTC 2026"},
+    {"id": "uptime", "match": r"^uptime\b", "out": " 17:41:07 up 23 days,  4:12,  1 user,  load average: 1.84, 1.71, 1.12"},
+    {"id": "service-ls", "match": r"^docker\s+service\s+(ls|list)\b", "out": [
+        "ID             NAME            MODE         REPLICAS   IMAGE                                 PORTS",
+        "k2x9a8s7d6f5   dokploy         replicated   1/1        dokploy/dokploy:v0.24.3               *:3000->3000/tcp",
+        "p3o4i5u6y7t8   shop_api        replicated   2/2        registry.acme.test/shop-api:1.14.2",
+        "l1k2j3h4g5f6   shop_postgres   replicated   1/1        postgres:16",
+        "q9w8e7r6t5y4   shop_redis      replicated   1/1        redis:7-alpine",
+        "z1x2c3v4b5n6   shop_web        replicated   2/2        registry.acme.test/shop-web:3.2.0",
+        "m7n8b9v0c1x2   shop_worker     replicated   4/4        registry.acme.test/shop-worker:2.3.0"]},
+    {"id": "node-ls", "match": r"^docker\s+node\s+ls\b", "out": [
+        "ID                            HOSTNAME   STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION",
+        "v8c7x6z5l4k3j2h1g0f9d8s7a *   prod-1     Ready     Active         Leader           27.3.1"]},
+    {"id": "ps-api", "match": r"^docker\s+service\s+ps\b.*shop_api", "out": [
+        "ID             NAME             IMAGE                                NODE     DESIRED STATE   CURRENT STATE            ERROR                       PORTS",
+        "h2g4f6d8s0a2   shop_api.1       registry.acme.test/shop-api:1.14.2   prod-1   Running         Running 3 minutes ago",
+        "p0o9i8u7y6t5    \\_ shop_api.1   registry.acme.test/shop-api:1.14.2   prod-1   Shutdown        Failed 4 minutes ago     \"task: non-zero exit (1)\"",
+        "q8w2e4r6t8y0    \\_ shop_api.1   registry.acme.test/shop-api:1.14.2   prod-1   Shutdown        Failed 27 minutes ago    \"task: non-zero exit (1)\"",
+        "m4n6b8v0c2x4   shop_api.2       registry.acme.test/shop-api:1.14.2   prod-1   Running         Running 41 minutes ago",
+        "z1x3c5v7b9n1    \\_ shop_api.2   registry.acme.test/shop-api:1.14.2   prod-1   Shutdown        Failed 41 minutes ago    \"task: non-zero exit (1)\""]},
+    {"id": "ps-worker", "match": r"^docker\s+service\s+ps\b.*shop_worker", "out": [
+        "ID             NAME            IMAGE                                   NODE     DESIRED STATE   CURRENT STATE            ERROR   PORTS",
+        "w1k3r5t7y9u0   shop_worker.1   registry.acme.test/shop-worker:2.3.0    prod-1   Running         Running 43 minutes ago",
+        "a1s2d3f4g5h6    \\_ shop_worker.1   registry.acme.test/shop-worker:2.3.0   prod-1   Shutdown   Shutdown 43 minutes ago",
+        "w2k3r5t7y9u0   shop_worker.2   registry.acme.test/shop-worker:2.3.0    prod-1   Running         Running 43 minutes ago",
+        "w3k3r5t7y9u0   shop_worker.3   registry.acme.test/shop-worker:2.3.0    prod-1   Running         Running 43 minutes ago",
+        "w4k3r5t7y9u0   shop_worker.4   registry.acme.test/shop-worker:2.3.0    prod-1   Running         Running 43 minutes ago"]},
+    {"id": "ps-other", "match": r"^docker\s+service\s+ps\b.*(shop_web|shop_postgres|shop_redis|dokploy)", "out": [
+        "ID             NAME              IMAGE            NODE     DESIRED STATE   CURRENT STATE          ERROR   PORTS",
+        "r5t6y7u8i9o0   (service).1       (image)          prod-1   Running         Running 6 days ago"]},
+    {"id": "inspect-worker", "match": r"^docker\s+(service\s+)?inspect\b.*shop_worker", "out": [
+        "[{",
+        "  \"ID\": \"m7n8b9v0c1x2\",",
+        "  \"UpdatedAt\": \"2026-10-29T16:58:31.204Z\",",
+        "  \"Spec\": {\"Name\": \"shop_worker\", \"Labels\": {\"com.docker.stack.namespace\": \"shop\"},",
+        "    \"TaskTemplate\": {\"ContainerSpec\": {\"Image\": \"registry.acme.test/shop-worker:2.3.0\",",
+        "      \"Env\": [\"DATABASE_URL=postgres://shop:****@postgres:5432/shop\", \"DB_POOL_SIZE=40\", \"JOB_CONCURRENCY=40\"]}},",
+        "    \"Mode\": {\"Replicated\": {\"Replicas\": 4}}},",
+        "  \"PreviousSpec\": {\"TaskTemplate\": {\"ContainerSpec\": {",
+        "      \"Env\": [\"DATABASE_URL=postgres://shop:****@postgres:5432/shop\", \"DB_POOL_SIZE=10\", \"JOB_CONCURRENCY=10\"]}},",
+        "    \"Mode\": {\"Replicated\": {\"Replicas\": 4}}},",
+        "  \"UpdateStatus\": {\"State\": \"completed\", \"CompletedAt\": \"2026-10-29T16:58:44.900Z\"}",
+        "}]"]},
+    {"id": "inspect-api", "match": r"^docker\s+(service\s+)?inspect\b.*shop_api", "out": [
+        "[{", "  \"UpdatedAt\": \"2026-10-21T19:07:12.000Z\",",
+        "  \"Spec\": {\"Name\": \"shop_api\", \"TaskTemplate\": {\"ContainerSpec\": {\"Env\": [\"DB_POOL_SIZE=10\", \"REDIS_URL=redis://redis:6379\"]}}, \"Mode\": {\"Replicated\": {\"Replicas\": 2}}}",
+        "}]"]},
+    {"id": "logs-api", "match": r"^docker\s+(service\s+)?logs\b.*shop_api", "out": api_logs},
+    {"id": "logs-worker", "match": r"^docker\s+(service\s+)?logs\b.*shop_worker", "out": worker_logs},
+    {"id": "logs-pg", "match": r"^docker\s+(service\s+)?logs\b.*(shop_postgres|postgres)", "out": pg_logs},
+    {"id": "logs-traefik", "match": r"^docker\s+(service\s+)?logs\b.*traefik", "out": traefik_logs},
+    {"id": "logs-web", "match": r"^docker\s+(service\s+)?logs\b.*shop_web", "out": [
+        "2026-10-29T17:38:02.120Z shop_web.1.r2t4y6u8i0o2@prod-1 | GET /products 200 in 131ms",
+        "2026-10-29T17:39:15.551Z shop_web.2.e3r5t7y9u1i3@prod-1 | GET / 200 in 88ms"]},
+    {"id": "logs-redis", "match": r"^docker\s+(service\s+)?logs\b.*redis", "out": [
+        "1:M 29 Oct 2026 16:00:01.003 * 100 changes in 300 seconds. Saving...",
+        "1:M 29 Oct 2026 17:20:01.019 * Background saving terminated with success"]},
+    {"id": "logs-dokploy", "match": r"^docker\s+(service\s+)?logs\b.*dokploy", "out": [
+        "2026-10-29T16:58:20.311Z [deploy] shop (compose): triggered by push to main (6f2c1a9)",
+        "2026-10-29T16:58:44.912Z [deploy] shop (compose): docker stack deploy finished, status=done"]},
+    {"id": "docker-ps", "match": r"^docker\s+(ps|container\s+ls)\b", "out": [
+        "CONTAINER ID   IMAGE                                  STATUS                  NAMES",
+        "1a2b3c4d5e6f   registry.acme.test/shop-api:1.14.2     Up 3 minutes (healthy)  shop_api.1.h2g4f6d8s0a2",
+        "2b3c4d5e6f7a   registry.acme.test/shop-api:1.14.2     Up 41 minutes (healthy) shop_api.2.m4n6b8v0c2x4",
+        "3c4d5e6f7a8b   registry.acme.test/shop-worker:2.3.0   Up 43 minutes           shop_worker.1.w1k3r5t7y9u0",
+        "4d5e6f7a8b9c   registry.acme.test/shop-worker:2.3.0   Up 43 minutes           shop_worker.2.w2k3r5t7y9u0",
+        "5e6f7a8b9c0d   registry.acme.test/shop-worker:2.3.0   Up 43 minutes           shop_worker.3.w3k3r5t7y9u0",
+        "6f7a8b9c0d1e   registry.acme.test/shop-worker:2.3.0   Up 43 minutes           shop_worker.4.w4k3r5t7y9u0",
+        "7a8b9c0d1e2f   postgres:16                            Up 23 days              shop_postgres.1.l1k2j3h4g5f6",
+        "8b9c0d1e2f3a   redis:7-alpine                         Up 23 days              shop_redis.1.q9w8e7r6t5y4",
+        "9c0d1e2f3a4b   registry.acme.test/shop-web:3.2.0      Up 6 days               shop_web.1.r2t4y6u8i0o2",
+        "0d1e2f3a4b5c   registry.acme.test/shop-web:3.2.0      Up 6 days               shop_web.2.e3r5t7y9u1i3",
+        "1e2f3a4b5c6d   traefik:v3.1                           Up 23 days              dokploy-traefik",
+        "2f3a4b5c6d7e   dokploy/dokploy:v0.24.3                Up 23 days              dokploy.1.k2x9a8s7d6f5"]},
+    {"id": "stats", "match": r"^docker\s+stats\b", "out": [
+        "NAME                         CPU %   MEM USAGE / LIMIT     MEM %",
+        "shop_api.1.h2g4f6d8s0a2      2.1%    188MiB / 15.6GiB      1.2%",
+        "shop_api.2.m4n6b8v0c2x4      3.4%    201MiB / 15.6GiB      1.3%",
+        "shop_worker.1.w1k3r5t7y9u0   41.2%   612MiB / 15.6GiB      3.8%",
+        "shop_worker.2.w2k3r5t7y9u0   39.8%   598MiB / 15.6GiB      3.7%",
+        "shop_worker.3.w3k3r5t7y9u0   40.5%   604MiB / 15.6GiB      3.8%",
+        "shop_worker.4.w4k3r5t7y9u0   38.9%   590MiB / 15.6GiB      3.7%",
+        "shop_postgres.1.l1k2j3h4g5f6 63.0%   2.1GiB / 15.6GiB      13.4%",
+        "shop_redis.1.q9w8e7r6t5y4    0.3%    24MiB / 15.6GiB       0.2%",
+        "dokploy-traefik              0.8%    61MiB / 15.6GiB       0.4%"]},
+    {"id": "pg-activity", "match": r"pg_stat_activity", "out": [
+        " application_name |  state  | count",
+        "------------------+---------+-------",
+        " shop-worker      | idle    |    61",
+        " shop-worker      | active  |    36",
+        " shop-api         | idle    |     0",
+        "                  |         |     3",
+        "(4 rows)"]},
+    {"id": "pg-maxconn", "match": r"max_connections", "out": [" max_connections", "-----------------", " 100", "(1 row)"]},
+    {"id": "pg-isready", "match": r"pg_isready", "out": "/var/run/postgresql:5432 - accepting connections"},
+    {"id": "psql-other", "match": r"psql", "out": "psql: error: connection to server on socket \"/var/run/postgresql/.s.PGSQL.5432\" failed: FATAL:  sorry, too many clients already", "exit": 2},
+    {"id": "df", "match": r"^df\b", "out": [
+        "Filesystem      Size  Used Avail Use% Mounted on",
+        "/dev/sda1       160G   97G   63G  61% /",
+        "tmpfs           7.8G     0  7.8G   0% /dev/shm"]},
+    {"id": "docker-df", "match": r"^docker\s+system\s+df", "out": [
+        "TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE",
+        "Images          31        9         14.2GB    9.1GB (64%)",
+        "Containers      12        12        311MB     0B (0%)",
+        "Local Volumes   6         4         38.4GB    0B (0%)"]},
+    {"id": "free", "match": r"^free\b", "out": [
+        "               total        used        free      shared  buff/cache   available",
+        "Mem:           15981        6120         890         212        8970        9420",
+        "Swap:              0           0           0"]},
+    {"id": "redis-ping", "match": r"redis-cli", "out": "PONG"},
+    {"id": "health", "match": r"^(curl|wget)\b.*(health|:4000)", "out": "{\"status\":\"ok\",\"db\":\"ok\"}"},
+]
+
+sim = {
+    "commands": ["ssh", "docker", "psql", "pg_isready", "redis-cli"],
+    "ssh_hosts": {"prod-1": {}},
+    "rules": rules,
+}
+here = os.path.dirname(os.path.abspath(__file__))
+json.dump(sim, open(os.path.join(here, "sim.json"), "w"), indent=1)
+print("wrote sim.json,", len(rules), "rules")

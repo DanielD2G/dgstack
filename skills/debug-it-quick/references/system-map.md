@@ -1,6 +1,6 @@
 # System map: discovering targets and quick triage
 
-Read only the sections for the environments this problem touches. Each section says how to find the targets (what to list as separate scouts), the one-shot sweep for step 3, and the commands a scout should start with.
+Read only the sections for the environments this problem touches. Each section says what the separate systems are, the sweep for step 2, and the commands to follow a lead (or to start a scout with).
 
 All commands here are read-only. Keep them that way in the briefs.
 
@@ -27,6 +27,8 @@ When a check needs a web dashboard (Dokploy, Coolify, Portainer, the AWS console
 **Sweep:**
 - Swarm: `docker service ls` (look for `0/N` replicas), `docker node ls`
 - Compose / plain: `docker ps -a --format 'table {{.Names}}\t{{.Status}}\t{{.RunningFor}}'` (look for `Restarting`, `Exited (137)`, `(unhealthy)`)
+- Every node, not just the manager: `ssh <node> 'df -h; free -m'`
+- The proxy's access log with durations: `docker logs --since 2h <traefik|nginx> | tail -200` (which routes are slow or 5xx, since when). On a busy proxy, filter instead of tailing: only 5xx, or only requests over a second, grouped by route.
 
 **Scout starts with:**
 - `docker service ps <svc> --no-trunc` (the error column says why tasks died)
@@ -84,7 +86,8 @@ Use their CLIs read-only (`gcloud`, `az`, `vercel`, `netlify`, `fly`, `render`, 
 
 One scout can usually group these.
 
-- DNS: `dig +short <host>`, compare against what it should be; `dig @1.1.1.1` vs the local resolver
+- DNS: `dig +short <host>` and `dig +short AAAA <host>`, compare against what they should be; `dig @1.1.1.1` vs the local resolver. A stale record left over from a migration is a classic.
+- Dual stack: when a host has both A and AAAA, test each family on its own (`curl -4 -sv`, `curl -6 -sv`, or `--resolve <host>:443:<ip>`). They can land on different servers, and clients (and Let's Encrypt) prefer IPv6.
 - TLS: `echo | openssl s_client -connect <host>:443 -servername <host> 2>/dev/null | openssl x509 -noout -dates -subject`
 - HTTP path: `curl -sv -o /dev/null --max-time 10 <url>` (status, redirects, which hop fails)
 - Ports: `nc -zv <host> <port>`

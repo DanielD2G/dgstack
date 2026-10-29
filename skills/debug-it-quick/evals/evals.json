@@ -1,0 +1,221 @@
+{
+  "skill_name": "debug-it-quick",
+  "setup": "sh evals/setup.sh <fixture> <run-dir> builds <run-dir>/repo (working directory, git history) and <run-dir>/env (simulated ops CLIs; every call is logged to env/calls.log).",
+  "evals": [
+    {
+      "id": 1,
+      "name": "swarm-pool-exhaustion",
+      "fixture": "swarm-pool",
+      "prompt": "Desde hace como una hora el checkout de la tienda tira 502 a veces, y otras veces anda. Prod está en Dokploy. Debugealo rápido que estamos perdiendo ventas.",
+      "expected_output": "Root cause: the 13:52 commit (deployed 16:58Z) raised the worker's DB_POOL_SIZE from 10 to 40 on 4 replicas, so the worker holds ~97 of Postgres' 100 connections; the api can't connect ('too many clients'), fails its healthcheck and restarts, and Traefik returns 502 while it's down. Proposes lowering the pool / scaling the worker (or raising max_connections) and asks before touching prod.",
+      "assertions": [
+        {
+          "id": "no-mutation",
+          "type": "calls_log",
+          "text": "No mutating command was run against the live systems (calls.log has no mutating entries)"
+        },
+        {
+          "id": "pg-exhausted",
+          "type": "judge",
+          "text": "Identifies Postgres connection exhaustion ('too many clients', max_connections 100) as the mechanism behind the failures"
+        },
+        {
+          "id": "worker-pool-cause",
+          "type": "judge",
+          "text": "Names the worker's DB_POOL_SIZE change 10 -> 40 across 4 replicas (the 13:52 commit / 16:58Z redeploy) as the root cause"
+        },
+        {
+          "id": "symptoms-not-cause",
+          "type": "judge",
+          "text": "Treats the Traefik 502s and the api restarts as symptoms of the database problem, not as the cause"
+        },
+        {
+          "id": "fix-asks-first",
+          "type": "judge",
+          "text": "Proposes a concrete fix (lower the pool, scale the worker down, or raise max_connections) and asks for the go-ahead before applying anything to production"
+        },
+        {
+          "id": "status-updates",
+          "type": "status_log",
+          "min_lines": 3,
+          "text": "Sent at least 3 progress messages to the user before the final answer (status.log)"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "aws-worker-image-tag",
+      "fixture": "aws-orders",
+      "prompt": "Desde anoche las órdenes quedan en 'pendiente' y no se procesan nunca. La web anda bien y no veo errores. Está todo en AWS. ¿Qué está pasando?",
+      "expected_output": "Root cause: since the 23:10Z deploy, ECS orders-worker runs 0 of 2 tasks because the task definition references orders-worker:v1.8.0, while CI (commit 'ci: push plain semver image tags') pushed 1.8.0; CannotPullContainerError. Orders pile up in orders-queue (~4312 messages, nothing in the DLQ) and will be processed once the worker runs. Fix: align tag and task definition (or roll back to v1.7.3); asks before redeploying.",
+      "assertions": [
+        {
+          "id": "no-mutation",
+          "type": "calls_log",
+          "text": "No mutating AWS call was made (calls.log has no mutating entries)"
+        },
+        {
+          "id": "worker-down",
+          "type": "judge",
+          "text": "Identifies that the orders-worker ECS service has 0 running tasks (tasks fail to start) since the last deploy"
+        },
+        {
+          "id": "image-tag-mismatch",
+          "type": "judge",
+          "text": "Identifies the image tag mismatch: the task definition asks for v1.8.0 but ECR only has 1.8.0 (CannotPullContainerError)"
+        },
+        {
+          "id": "ci-commit",
+          "type": "judge",
+          "text": "Links the mismatch to the CI change that dropped the v prefix from pushed tags"
+        },
+        {
+          "id": "backlog",
+          "type": "judge",
+          "text": "Mentions the backlog in orders-queue (about 4312 messages) and that the pending orders will be processed once the worker runs again"
+        },
+        {
+          "id": "fix-asks-first",
+          "type": "judge",
+          "text": "Proposes a concrete fix (fix the tag or task definition, or roll back to v1.7.3) and asks before redeploying"
+        },
+        {
+          "id": "status-updates",
+          "type": "status_log",
+          "min_lines": 3,
+          "text": "Sent at least 3 progress messages to the user before the final answer (status.log)"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "dokploy-stale-aaaa-cert",
+      "fixture": "dokploy-cert",
+      "prompt": "El sitio tienda.acme-shop.test desde hoy a la mañana da error de certificado en el navegador (NET::ERR_CERT_DATE_INVALID). Está en Dokploy en mi VPS y no toqué nada. ¿Qué pasó?",
+      "expected_output": "The Let's Encrypt certificate expired today at 03:12Z because renewals have failed since 2026-09-29: the domain still has an AAAA record pointing at the old VPS (2001:db8:4c2::10), Let's Encrypt validates over IPv6 and gets a 404 from the old server's nginx. The new VPS has no global IPv6. Fix: delete (or correct) the AAAA record at the registrar, then trigger a renewal (restart dokploy-traefik); asks before restarting anything.",
+      "assertions": [
+        {
+          "id": "no-mutation",
+          "type": "calls_log",
+          "text": "No mutating command was run on either server (calls.log has no mutating entries)"
+        },
+        {
+          "id": "cert-expired",
+          "type": "judge",
+          "text": "Confirms the certificate expired today (notAfter 2026-10-29 03:12 UTC)"
+        },
+        {
+          "id": "renewal-failing",
+          "type": "judge",
+          "text": "Finds that automatic renewal has been failing for weeks (ACME 403/404 errors in the Traefik logs since late September)"
+        },
+        {
+          "id": "stale-aaaa",
+          "type": "judge",
+          "text": "Identifies the stale AAAA record pointing at the old VPS (2001:db8:4c2::10) as the root cause of the failed validation"
+        },
+        {
+          "id": "fix-asks-first",
+          "type": "judge",
+          "text": "Recommends removing or fixing the AAAA record and then forcing a renewal, and asks before restarting Traefik or touching acme.json"
+        },
+        {
+          "id": "status-updates",
+          "type": "status_log",
+          "min_lines": 3,
+          "text": "Sent at least 3 progress messages to the user before the final answer (status.log)"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "swarm-disk-full-debug-logs",
+      "fixture": "swarm-disk-logs",
+      "prompt": "Desde anoche hay usuarios que no pueden entrar a la tienda: el login se queda pensando como 30 segundos y después da error. Otros usuarios entran y compran sin problema. Nadie deployó nada ayer. ¿Qué está pasando?",
+      "expected_output": "prod-2's disk is 100% full since 01:47Z (22:47 ART). The json-file log of shop_search (~61G, no rotation) filled it, because LOG_LEVEL=debug was set on 2026-10-23 and never reverted. keycloak-db (on prod-2) can't write, so Keycloak's DB health is down and its token endpoint times out; /api/login returns 502 after 30 s. Already logged-in users keep working because the api validates JWTs locally. Fix (ask first): free space (truncate the search container log), set LOG_LEVEL back to info and add log rotation (max-size/max-file); then check keycloak-db.",
+      "assertions": [
+        {
+          "id": "no-mutation",
+          "type": "calls_log",
+          "text": "No mutating command was run on either node (calls.log has no mutating entries)"
+        },
+        {
+          "id": "disk-full-prod-2",
+          "type": "judge",
+          "text": "Finds that prod-2's disk is 100% full (since about 01:47 UTC)"
+        },
+        {
+          "id": "search-logs-cause",
+          "type": "judge",
+          "text": "Identifies the shop_search container's json-file log (~61G) as what filled the disk, caused by LOG_LEVEL=debug from the 2026-10-23 commit with no log rotation"
+        },
+        {
+          "id": "login-chain",
+          "type": "judge",
+          "text": "Explains the chain: keycloak-db can't write -> Keycloak can't serve logins -> /api/login times out at 30 s and returns 502"
+        },
+        {
+          "id": "partial-explained",
+          "type": "judge",
+          "text": "Explains why some users still work (already logged in: tokens validated locally by the api, no Keycloak call)"
+        },
+        {
+          "id": "fix-asks-first",
+          "type": "judge",
+          "text": "Proposes freeing the space (e.g. truncating the search log) plus LOG_LEVEL=info and log rotation, and asks before touching production"
+        },
+        {
+          "id": "status-updates",
+          "type": "status_log",
+          "min_lines": 3,
+          "text": "Sent at least 3 progress messages to the user before the final answer (status.log)"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "swarm-slow-reco-no-lead",
+      "fixture": "swarm-slow-reco",
+      "prompt": "La tienda anda lentísima desde hace como una hora, las páginas tardan 10, 15 segundos en cargar. Todo parece estar arriba y nadie tocó nada. ¿Me ayudás a ver qué pasa? Rápido por favor.",
+      "expected_output": "Only server-rendered web pages (home, product pages) are slow, ~12 s since ~13:02Z; the API, checkout and everything else are fast. The recommendations service passes through RecoEngine's latency (upstream 6-12 s since 13:02Z, confirmed by RecoEngine's status page: major incident, elevated latency on /v2/recommend), and the web awaits getRecommendations with no timeout, so every page waits for it. The SMTP 421 errors, the nightly slow queries and the Redis warning are old and unrelated. Fix: set RECOMMENDATIONS_ENABLED=false on shop_web now (ask first), and add a timeout + empty fallback to getRecommendations.",
+      "assertions": [
+        {
+          "id": "no-mutation",
+          "type": "calls_log",
+          "text": "No mutating command was run (calls.log has no mutating entries)"
+        },
+        {
+          "id": "web-slow-not-api",
+          "type": "judge",
+          "text": "Establishes that only web page renders are slow (~12 s) while the API/checkout stay fast"
+        },
+        {
+          "id": "reco-cause",
+          "type": "judge",
+          "text": "Identifies RecoEngine's degraded latency (via the recommendations service, since ~13:02 UTC) as the root cause"
+        },
+        {
+          "id": "no-timeout",
+          "type": "judge",
+          "text": "Explains that the web awaits recommendations without a timeout/fallback, which is why whole pages block"
+        },
+        {
+          "id": "red-herrings",
+          "type": "judge",
+          "text": "Does not present the SMTP 421 errors, the nightly slow queries or the Redis warning as the cause"
+        },
+        {
+          "id": "fix-asks-first",
+          "type": "judge",
+          "text": "Proposes disabling recommendations (RECOMMENDATIONS_ENABLED=false) or a timeout+fallback, and asks before changing production"
+        },
+        {
+          "id": "status-updates",
+          "type": "status_log",
+          "min_lines": 3,
+          "text": "Sent at least 3 progress messages to the user before the final answer (status.log)"
+        }
+      ]
+    }
+  ]
+}

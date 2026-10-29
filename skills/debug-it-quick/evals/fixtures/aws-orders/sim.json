@@ -1,0 +1,197 @@
+{
+ "commands": [
+  "aws"
+ ],
+ "ssh_hosts": {},
+ "rules": [
+  {
+   "id": "mut-aws",
+   "mutating": true,
+   "match": "^aws\\s+\\S+\\s+(update-|delete-|put-|create-|register-|deregister-|stop-|start-task|run-task|purge-|send-message|set-|reboot-|modify-|invoke|redrive|start-message-move)",
+   "out": "{}"
+  },
+  {
+   "id": "sts",
+   "match": "^aws\\s+sts\\s+get-caller-identity",
+   "out": "{\n    \"UserId\": \"AIDA...\",\n    \"Account\": \"123456789012\",\n    \"Arn\": \"arn:aws:iam::123456789012:user/oncall\"\n}"
+  },
+  {
+   "id": "ecs-list-services",
+   "match": "^aws\\s+ecs\\s+list-services",
+   "out": "{\n    \"serviceArns\": [\n        \"arn:aws:ecs:us-east-1:123456789012:service/prod/orders-api\",\n        \"arn:aws:ecs:us-east-1:123456789012:service/prod/orders-worker\"\n    ]\n}"
+  },
+  {
+   "id": "ecs-list-clusters",
+   "match": "^aws\\s+ecs\\s+list-clusters",
+   "out": "{\n    \"clusterArns\": [\n        \"arn:aws:ecs:us-east-1:123456789012:cluster/prod\"\n    ]\n}"
+  },
+  {
+   "id": "ecs-desc-both",
+   "match": "^aws\\s+ecs\\s+describe-services.*orders-api.*orders-worker|^aws\\s+ecs\\s+describe-services.*orders-worker.*orders-api",
+   "out": "{\n    \"services\": [\n        {\n            \"serviceName\": \"orders-api\",\n            \"status\": \"ACTIVE\",\n            \"desiredCount\": 3,\n            \"runningCount\": 3,\n            \"pendingCount\": 0,\n            \"taskDefinition\": \"arn:aws:ecs:us-east-1:123456789012:task-definition/orders-api:57\",\n            \"deployments\": [\n                {\n                    \"status\": \"PRIMARY\",\n                    \"desiredCount\": 3,\n                    \"runningCount\": 3,\n                    \"rolloutState\": \"COMPLETED\",\n                    \"createdAt\": \"2026-10-09T18:25:40Z\"\n                }\n            ],\n            \"events\": [\n                {\n                    \"createdAt\": \"2026-10-29T12:10:01Z\",\n                    \"message\": \"(service orders-api) has reached a steady state.\"\n                }\n            ]\n        },\n        {\n            \"serviceName\": \"orders-worker\",\n            \"status\": \"ACTIVE\",\n            \"desiredCount\": 2,\n            \"runningCount\": 0,\n            \"pendingCount\": 0,\n            \"taskDefinition\": \"arn:aws:ecs:us-east-1:123456789012:task-definition/orders-worker:42\",\n            \"deployments\": [\n                {\n                    \"status\": \"PRIMARY\",\n                    \"taskDefinition\": \"arn:aws:ecs:us-east-1:123456789012:task-definition/orders-worker:42\",\n                    \"desiredCount\": 2,\n                    \"runningCount\": 0,\n                    \"failedTasks\": 2,\n                    \"rolloutState\": \"FAILED\",\n                    \"rolloutStateReason\": \"ECS deployment circuit breaker: tasks failed to start.\",\n                    \"createdAt\": \"2026-10-28T23:10:14Z\"\n                }\n            ],\n            \"events\": [\n                {\n                    \"createdAt\": \"2026-10-29T13:31:02Z\",\n                    \"message\": \"(service orders-worker) has started 2 tasks: (task 9f1e...) (task 1c7d...).\"\n                },\n                {\n                    \"createdAt\": \"2026-10-28T23:16:40Z\",\n                    \"message\": \"(service orders-worker) deployment ecs-svc/4471 deployment failed: tasks failed to start.\"\n                },\n                {\n                    \"createdAt\": \"2026-10-28T23:10:20Z\",\n                    \"message\": \"(service orders-worker) has stopped 2 running tasks: (task 7a2b...) (task 3e4f...).\"\n                },\n                {\n                    \"createdAt\": \"2026-10-28T23:10:14Z\",\n                    \"message\": \"(service orders-worker) has started 2 tasks: (task 5d6e...) (task 8b9c...).\"\n                }\n            ]\n        }\n    ]\n}"
+  },
+  {
+   "id": "ecs-desc-worker",
+   "match": "^aws\\s+ecs\\s+describe-services.*orders-worker",
+   "out": "{\n    \"services\": [\n        {\n            \"serviceName\": \"orders-worker\",\n            \"status\": \"ACTIVE\",\n            \"desiredCount\": 2,\n            \"runningCount\": 0,\n            \"pendingCount\": 0,\n            \"taskDefinition\": \"arn:aws:ecs:us-east-1:123456789012:task-definition/orders-worker:42\",\n            \"deployments\": [\n                {\n                    \"status\": \"PRIMARY\",\n                    \"taskDefinition\": \"arn:aws:ecs:us-east-1:123456789012:task-definition/orders-worker:42\",\n                    \"desiredCount\": 2,\n                    \"runningCount\": 0,\n                    \"failedTasks\": 2,\n                    \"rolloutState\": \"FAILED\",\n                    \"rolloutStateReason\": \"ECS deployment circuit breaker: tasks failed to start.\",\n                    \"createdAt\": \"2026-10-28T23:10:14Z\"\n                }\n            ],\n            \"events\": [\n                {\n                    \"createdAt\": \"2026-10-29T13:31:02Z\",\n                    \"message\": \"(service orders-worker) has started 2 tasks: (task 9f1e...) (task 1c7d...).\"\n                },\n                {\n                    \"createdAt\": \"2026-10-28T23:16:40Z\",\n                    \"message\": \"(service orders-worker) deployment ecs-svc/4471 deployment failed: tasks failed to start.\"\n                },\n                {\n                    \"createdAt\": \"2026-10-28T23:10:20Z\",\n                    \"message\": \"(service orders-worker) has stopped 2 running tasks: (task 7a2b...) (task 3e4f...).\"\n                },\n                {\n                    \"createdAt\": \"2026-10-28T23:10:14Z\",\n                    \"message\": \"(service orders-worker) has started 2 tasks: (task 5d6e...) (task 8b9c...).\"\n                }\n            ]\n        }\n    ]\n}"
+  },
+  {
+   "id": "ecs-desc-api",
+   "match": "^aws\\s+ecs\\s+describe-services.*orders-api",
+   "out": "{\n    \"services\": [\n        {\n            \"serviceName\": \"orders-api\",\n            \"status\": \"ACTIVE\",\n            \"desiredCount\": 3,\n            \"runningCount\": 3,\n            \"pendingCount\": 0,\n            \"taskDefinition\": \"arn:aws:ecs:us-east-1:123456789012:task-definition/orders-api:57\",\n            \"deployments\": [\n                {\n                    \"status\": \"PRIMARY\",\n                    \"desiredCount\": 3,\n                    \"runningCount\": 3,\n                    \"rolloutState\": \"COMPLETED\",\n                    \"createdAt\": \"2026-10-09T18:25:40Z\"\n                }\n            ],\n            \"events\": [\n                {\n                    \"createdAt\": \"2026-10-29T12:10:01Z\",\n                    \"message\": \"(service orders-api) has reached a steady state.\"\n                }\n            ]\n        }\n    ]\n}"
+  },
+  {
+   "id": "ecs-list-tasks-stopped",
+   "match": "^aws\\s+ecs\\s+list-tasks.*STOPPED",
+   "out": "{\n    \"taskArns\": [\n        \"arn:aws:ecs:us-east-1:123456789012:task/prod/9f1e2d3c4b5a\",\n        \"arn:aws:ecs:us-east-1:123456789012:task/prod/1c7d8e9f0a1b\"\n    ]\n}"
+  },
+  {
+   "id": "ecs-list-tasks-worker",
+   "match": "^aws\\s+ecs\\s+list-tasks.*orders-worker",
+   "out": "{\n    \"taskArns\": []\n}"
+  },
+  {
+   "id": "ecs-list-tasks",
+   "match": "^aws\\s+ecs\\s+list-tasks",
+   "out": "{\n    \"taskArns\": [\n        \"arn:aws:ecs:us-east-1:123456789012:task/prod/a1a1a1\",\n        \"arn:aws:ecs:us-east-1:123456789012:task/prod/b2b2b2\",\n        \"arn:aws:ecs:us-east-1:123456789012:task/prod/c3c3c3\"\n    ]\n}"
+  },
+  {
+   "id": "ecs-describe-tasks",
+   "match": "^aws\\s+ecs\\s+describe-tasks",
+   "out": "{\n    \"tasks\": [\n        {\n            \"taskArn\": \"arn:aws:ecs:us-east-1:123456789012:task/prod/9f1e2d3c4b5a\",\n            \"group\": \"service:orders-worker\",\n            \"lastStatus\": \"STOPPED\",\n            \"stopCode\": \"TaskFailedToStart\",\n            \"stoppedAt\": \"2026-10-29T13:31:40Z\",\n            \"stoppedReason\": \"CannotPullContainerError: pull image manifest has been retried 7 time(s): failed to resolve ref 123456789012.dkr.ecr.us-east-1.amazonaws.com/orders-worker:v1.8.0: 123456789012.dkr.ecr.us-east-1.amazonaws.com/orders-worker:v1.8.0: not found\",\n            \"containers\": [\n                {\n                    \"name\": \"worker\",\n                    \"image\": \"123456789012.dkr.ecr.us-east-1.amazonaws.com/orders-worker:v1.8.0\",\n                    \"lastStatus\": \"STOPPED\"\n                }\n            ]\n        }\n    ]\n}"
+  },
+  {
+   "id": "ecs-describe-taskdef-41",
+   "match": "^aws\\s+ecs\\s+describe-task-definition.*orders-worker:41",
+   "out": "{\n    \"taskDefinition\": {\n        \"family\": \"orders-worker\",\n        \"revision\": 41,\n        \"registeredAt\": \"2026-10-09T18:24:02Z\",\n        \"containerDefinitions\": [\n            {\n                \"name\": \"worker\",\n                \"image\": \"123456789012.dkr.ecr.us-east-1.amazonaws.com/orders-worker:v1.7.3\",\n                \"memory\": 1024\n            }\n        ]\n    }\n}"
+  },
+  {
+   "id": "ecs-list-taskdefs",
+   "match": "^aws\\s+ecs\\s+list-task-definitions",
+   "out": "{\n    \"taskDefinitionArns\": [\n        \"arn:aws:ecs:us-east-1:123456789012:task-definition/orders-worker:41\",\n        \"arn:aws:ecs:us-east-1:123456789012:task-definition/orders-worker:42\"\n    ]\n}"
+  },
+  {
+   "id": "ecs-describe-taskdef",
+   "match": "^aws\\s+ecs\\s+describe-task-definition.*orders-worker",
+   "out": "{\n    \"taskDefinition\": {\n        \"family\": \"orders-worker\",\n        \"revision\": 42,\n        \"registeredAt\": \"2026-10-28T23:10:12Z\",\n        \"registeredBy\": \"arn:aws:sts::123456789012:assumed-role/ci-deployer/gha\",\n        \"containerDefinitions\": [\n            {\n                \"name\": \"worker\",\n                \"image\": \"123456789012.dkr.ecr.us-east-1.amazonaws.com/orders-worker:v1.8.0\",\n                \"memory\": 1024\n            }\n        ]\n    }\n}"
+  },
+  {
+   "id": "ecr-images",
+   "match": "^aws\\s+ecr\\s+(describe-images|list-images).*orders-worker",
+   "out": "{\n    \"imageDetails\": [\n        {\n            \"imageTags\": [\n                \"1.8.0\"\n            ],\n            \"imagePushedAt\": \"2026-10-28T23:09:51Z\"\n        },\n        {\n            \"imageTags\": [\n                \"v1.7.3\"\n            ],\n            \"imagePushedAt\": \"2026-10-09T18:22:10Z\"\n        },\n        {\n            \"imageTags\": [\n                \"v1.7.2\"\n            ],\n            \"imagePushedAt\": \"2026-09-30T14:02:44Z\"\n        }\n    ]\n}"
+  },
+  {
+   "id": "ecr-images-api",
+   "match": "^aws\\s+ecr\\s+(describe-images|list-images).*orders-api",
+   "out": "{\n    \"imageDetails\": [\n        {\n            \"imageTags\": [\n                \"1.8.0\"\n            ],\n            \"imagePushedAt\": \"2026-10-28T23:09:58Z\"\n        },\n        {\n            \"imageTags\": [\n                \"v1.7.3\"\n            ],\n            \"imagePushedAt\": \"2026-10-09T18:22:31Z\"\n        }\n    ]\n}"
+  },
+  {
+   "id": "sqs-list",
+   "match": "^aws\\s+sqs\\s+list-queues",
+   "out": "{\n    \"QueueUrls\": [\n        \"https://sqs.us-east-1.amazonaws.com/123456789012/orders-queue\",\n        \"https://sqs.us-east-1.amazonaws.com/123456789012/orders-dlq\"\n    ]\n}"
+  },
+  {
+   "id": "sqs-url",
+   "match": "^aws\\s+sqs\\s+get-queue-url.*dlq",
+   "out": "{\n    \"QueueUrl\": \"https://sqs.us-east-1.amazonaws.com/123456789012/orders-dlq\"\n}"
+  },
+  {
+   "id": "sqs-url-main",
+   "match": "^aws\\s+sqs\\s+get-queue-url",
+   "out": "{\n    \"QueueUrl\": \"https://sqs.us-east-1.amazonaws.com/123456789012/orders-queue\"\n}"
+  },
+  {
+   "id": "sqs-attrs-dlq",
+   "match": "^aws\\s+sqs\\s+get-queue-attributes.*dlq",
+   "out": "{\n    \"Attributes\": {\n        \"ApproximateNumberOfMessages\": \"0\",\n        \"ApproximateNumberOfMessagesNotVisible\": \"0\"\n    }\n}"
+  },
+  {
+   "id": "sqs-attrs",
+   "match": "^aws\\s+sqs\\s+get-queue-attributes",
+   "out": "{\n    \"Attributes\": {\n        \"ApproximateNumberOfMessages\": \"4312\",\n        \"ApproximateNumberOfMessagesNotVisible\": \"0\",\n        \"ApproximateNumberOfMessagesDelayed\": \"0\",\n        \"MessageRetentionPeriod\": \"345600\",\n        \"RedrivePolicy\": \"{\\\"deadLetterTargetArn\\\":\\\"arn:aws:sqs:us-east-1:123456789012:orders-dlq\\\",\\\"maxReceiveCount\\\":5}\"\n    }\n}"
+  },
+  {
+   "id": "logs-worker",
+   "match": "^aws\\s+logs\\s+(tail|filter-log-events|get-log-events).*orders-worker",
+   "out": [
+    "2026-10-28T23:08:12.411Z ecs/worker/7a2b processed order 88123 in 412ms",
+    "2026-10-28T23:09:40.090Z ecs/worker/3e4f processed order 88124 in 388ms",
+    "2026-10-28T23:10:21.502Z ecs/worker/7a2b SIGTERM received, draining",
+    "2026-10-28T23:10:22.010Z ecs/worker/3e4f SIGTERM received, draining"
+   ]
+  },
+  {
+   "id": "logs-api",
+   "match": "^aws\\s+logs\\s+(tail|filter-log-events|get-log-events).*orders-api",
+   "out": [
+    "2026-10-29T13:38:02.114Z ecs/api/a1a1 POST /orders 201 order=92431 enqueued",
+    "2026-10-29T13:38:40.981Z ecs/api/b2b2 GET /orders/92388 200 status=pending",
+    "2026-10-29T13:39:15.220Z ecs/api/c3c3 POST /orders 201 order=92432 enqueued"
+   ]
+  },
+  {
+   "id": "logs-lambda",
+   "match": "^aws\\s+logs\\s+(tail|filter-log-events|get-log-events).*send-receipt",
+   "out": [
+    "2026-10-28T23:09:41.500Z START RequestId: 4b1c Version: $LATEST",
+    "2026-10-28T23:09:41.912Z receipt sent for order 88124",
+    "2026-10-28T23:09:41.913Z END RequestId: 4b1c"
+   ]
+  },
+  {
+   "id": "logs-groups",
+   "match": "^aws\\s+logs\\s+describe-log-groups",
+   "out": "{\n    \"logGroups\": [\n        {\n            \"logGroupName\": \"/ecs/orders-api\"\n        },\n        {\n            \"logGroupName\": \"/ecs/orders-worker\"\n        },\n        {\n            \"logGroupName\": \"/aws/lambda/send-receipt\"\n        }\n    ]\n}"
+  },
+  {
+   "id": "logs-other",
+   "match": "^aws\\s+logs\\s",
+   "out": ""
+  },
+  {
+   "id": "rds",
+   "match": "^aws\\s+rds\\s+describe-db-instances",
+   "out": "{\n    \"DBInstances\": [\n        {\n            \"DBInstanceIdentifier\": \"orders-db\",\n            \"DBInstanceStatus\": \"available\",\n            \"Engine\": \"postgres\",\n            \"EngineVersion\": \"16.4\",\n            \"DBInstanceClass\": \"db.t4g.medium\",\n            \"AllocatedStorage\": 100\n        }\n    ]\n}"
+  },
+  {
+   "id": "cw-metrics",
+   "match": "^aws\\s+cloudwatch\\s+get-metric-(statistics|data)",
+   "out": "{\n    \"Datapoints\": [\n        {\n            \"Timestamp\": \"2026-10-29T13:00:00Z\",\n            \"Average\": 12.4,\n            \"Unit\": \"Percent\"\n        },\n        {\n            \"Timestamp\": \"2026-10-29T12:00:00Z\",\n            \"Average\": 11.9,\n            \"Unit\": \"Percent\"\n        }\n    ]\n}"
+  },
+  {
+   "id": "cw-alarms",
+   "match": "^aws\\s+cloudwatch\\s+describe-alarms",
+   "out": "{\n    \"MetricAlarms\": [\n        {\n            \"AlarmName\": \"orders-api-5xx\",\n            \"StateValue\": \"OK\"\n        },\n        {\n            \"AlarmName\": \"orders-db-cpu-high\",\n            \"StateValue\": \"OK\"\n        }\n    ]\n}"
+  },
+  {
+   "id": "elb-tg",
+   "match": "^aws\\s+elbv2\\s+describe-target-groups",
+   "out": "{\n    \"TargetGroups\": [\n        {\n            \"TargetGroupName\": \"orders-api-tg\",\n            \"TargetGroupArn\": \"arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/orders-api-tg/abc\"\n        }\n    ]\n}"
+  },
+  {
+   "id": "elb-health",
+   "match": "^aws\\s+elbv2\\s+describe-target-health",
+   "out": "{\n    \"TargetHealthDescriptions\": [\n        {\n            \"Target\": {\n                \"Id\": \"10.0.3.11\",\n                \"Port\": 4000\n            },\n            \"TargetHealth\": {\n                \"State\": \"healthy\"\n            }\n        },\n        {\n            \"Target\": {\n                \"Id\": \"10.0.3.27\",\n                \"Port\": 4000\n            },\n            \"TargetHealth\": {\n                \"State\": \"healthy\"\n            }\n        },\n        {\n            \"Target\": {\n                \"Id\": \"10.0.4.9\",\n                \"Port\": 4000\n            },\n            \"TargetHealth\": {\n                \"State\": \"healthy\"\n            }\n        }\n    ]\n}"
+  },
+  {
+   "id": "elb-other",
+   "match": "^aws\\s+elbv2\\s",
+   "out": "{\n    \"LoadBalancers\": [\n        {\n            \"LoadBalancerName\": \"orders-alb\",\n            \"State\": {\n                \"Code\": \"active\"\n            }\n        }\n    ]\n}"
+  },
+  {
+   "id": "lambda",
+   "match": "^aws\\s+lambda\\s+(get-function|list-functions|get-function-configuration)",
+   "out": "{\n    \"Configuration\": {\n        \"FunctionName\": \"send-receipt\",\n        \"State\": \"Active\",\n        \"LastUpdateStatus\": \"Successful\",\n        \"Timeout\": 30,\n        \"LastModified\": \"2026-08-14T12:00:00Z\"\n    }\n}"
+  },
+  {
+   "id": "cloudtrail",
+   "match": "^aws\\s+cloudtrail\\s+lookup-events",
+   "out": "{\n    \"Events\": [\n        {\n            \"EventTime\": \"2026-10-28T23:10:14Z\",\n            \"EventName\": \"UpdateService\",\n            \"Username\": \"ci-deployer/gha\",\n            \"Resources\": [\n                {\n                    \"ResourceName\": \"arn:aws:ecs:us-east-1:123456789012:service/prod/orders-worker\"\n                }\n            ]\n        },\n        {\n            \"EventTime\": \"2026-10-28T23:10:12Z\",\n            \"EventName\": \"RegisterTaskDefinition\",\n            \"Username\": \"ci-deployer/gha\",\n            \"Resources\": [\n                {\n                    \"ResourceName\": \"orders-worker:42\"\n                }\n            ]\n        }\n    ]\n}"
+  },
+  {
+   "id": "aws-other",
+   "match": "^aws\\s",
+   "out": "{}"
+  }
+ ]
+}

@@ -1,0 +1,411 @@
+{
+ "commands": [
+  "ssh",
+  "dig",
+  "host",
+  "nslookup",
+  "curl",
+  "openssl",
+  "nc"
+ ],
+ "ssh_hosts": {
+  "vps": {},
+  "old-vps": {}
+ },
+ "rules": [
+  {
+   "id": "mut-docker",
+   "mutating": true,
+   "match": "^docker\\s+(service\\s+(update|scale|rollback|rm|create)|restart|stop|kill|rm|rmi|start|stack\\s+(deploy|rm)|system\\s+prune|compose\\s+(up|down|restart|stop))\\b",
+   "out": "dokploy-traefik"
+  },
+  {
+   "id": "mut-system",
+   "mutating": true,
+   "match": "^(systemctl\\s+(restart|stop|start|reload)|service\\s+\\S+\\s+(restart|stop|start|reload)|nginx\\s+-s|rm\\s|mv\\s|truncate\\s|chmod\\s|tee\\s|sed\\s+-i|certbot\\s+(renew|certonly|delete))",
+   "out": ""
+  },
+  {
+   "id": "date",
+   "match": "^date\\b",
+   "out": "Thu Oct 29 13:45:30 UTC 2026"
+  },
+  {
+   "id": "uptime",
+   "match": "^uptime\\b",
+   "out": " 13:45:30 up 45 days,  2:01,  0 users,  load average: 0.12, 0.09, 0.05"
+  },
+  {
+   "id": "dig-aaaa-short",
+   "match": "^dig\\b.*\\bAAAA\\b.*\\+short|^dig\\b.*\\+short.*\\bAAAA\\b",
+   "out": "2001:db8:4c2::10"
+  },
+  {
+   "id": "dig-aaaa",
+   "match": "^dig\\b.*\\bAAAA\\b",
+   "out": [
+    "; <<>> DiG 9.10.6 <<>> tienda.acme-shop.test AAAA",
+    ";; global options: +cmd",
+    ";; Got answer:",
+    ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 40213",
+    "",
+    ";; QUESTION SECTION:",
+    ";tienda.acme-shop.test.\t\t\tIN\tAAAA",
+    "",
+    ";; ANSWER SECTION:",
+    "tienda.acme-shop.test.\t3600\tIN\tAAAA\t2001:db8:4c2::10",
+    "",
+    ";; Query time: 31 msec",
+    ";; SERVER: 192.168.1.1#53(192.168.1.1)"
+   ]
+  },
+  {
+   "id": "dig-ns",
+   "match": "^dig\\b.*\\bNS\\b",
+   "out": [
+    "ns1.registrar-dns.test.",
+    "ns2.registrar-dns.test."
+   ]
+  },
+  {
+   "id": "dig-caa",
+   "match": "^dig\\b.*\\bCAA\\b",
+   "out": ""
+  },
+  {
+   "id": "dig-any",
+   "match": "^dig\\b.*\\bANY\\b",
+   "out": [
+    "; <<>> DiG 9.10.6 <<>> tienda.acme-shop.test ANY",
+    ";; global options: +cmd",
+    ";; Got answer:",
+    ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 40213",
+    "",
+    ";; QUESTION SECTION:",
+    ";tienda.acme-shop.test.\t\t\tIN\tANY",
+    "",
+    ";; ANSWER SECTION:",
+    "",
+    ";; Query time: 31 msec",
+    ";; SERVER: 192.168.1.1#53(192.168.1.1)",
+    "tienda.acme-shop.test.\t3600\tIN\tA\t198.51.100.20",
+    "tienda.acme-shop.test.\t3600\tIN\tAAAA\t2001:db8:4c2::10"
+   ]
+  },
+  {
+   "id": "dig-a-short",
+   "match": "^dig\\b.*\\+short",
+   "out": "198.51.100.20"
+  },
+  {
+   "id": "dig-a",
+   "match": "^dig\\b",
+   "out": [
+    "; <<>> DiG 9.10.6 <<>> tienda.acme-shop.test A",
+    ";; global options: +cmd",
+    ";; Got answer:",
+    ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 40213",
+    "",
+    ";; QUESTION SECTION:",
+    ";tienda.acme-shop.test.\t\t\tIN\tA",
+    "",
+    ";; ANSWER SECTION:",
+    "tienda.acme-shop.test.\t3600\tIN\tA\t198.51.100.20",
+    "",
+    ";; Query time: 31 msec",
+    ";; SERVER: 192.168.1.1#53(192.168.1.1)"
+   ]
+  },
+  {
+   "id": "host",
+   "match": "^host\\b",
+   "out": [
+    "tienda.acme-shop.test has address 198.51.100.20",
+    "tienda.acme-shop.test has IPv6 address 2001:db8:4c2::10"
+   ]
+  },
+  {
+   "id": "nslookup-aaaa",
+   "match": "^nslookup\\b.*(aaaa|AAAA)",
+   "out": [
+    "Server:\t192.168.1.1",
+    "Non-authoritative answer:",
+    "tienda.acme-shop.test\thas AAAA address 2001:db8:4c2::10"
+   ]
+  },
+  {
+   "id": "nslookup",
+   "match": "^nslookup\\b",
+   "out": [
+    "Server:\t192.168.1.1",
+    "Non-authoritative answer:",
+    "Name:\ttienda.acme-shop.test",
+    "Address: 198.51.100.20",
+    "Name:\ttienda.acme-shop.test",
+    "Address: 2001:db8:4c2::10"
+   ]
+  },
+  {
+   "id": "openssl-v6",
+   "match": "^openssl\\b.*(\\s-6\\b|2001.db8.4c2..10)",
+   "out": "connect: Connection timed out\nconnect:errno=60",
+   "exit": 1
+  },
+  {
+   "id": "openssl-x509",
+   "match": "^openssl\\s+x509\\b",
+   "stdin_match": "BEGIN CERTIFICATE|CONNECTED",
+   "stdin_err": "Could not read certificate from <stdin>\nUnable to load certificate",
+   "out": [
+    "subject=CN = tienda.acme-shop.test",
+    "issuer=C = US, O = Let's Encrypt, CN = R11",
+    "notBefore=Jul 31 03:12:45 2026 GMT",
+    "notAfter=Oct 29 03:12:44 2026 GMT"
+   ]
+  },
+  {
+   "id": "openssl",
+   "match": "^openssl\\b",
+   "out": [
+    "CONNECTED(00000003)",
+    "depth=0 CN = tienda.acme-shop.test",
+    "verify error:num=10:certificate has expired",
+    "notAfter=Oct 29 03:12:44 2026 GMT",
+    "---",
+    "Certificate chain",
+    " 0 s:CN = tienda.acme-shop.test",
+    "   i:C = US, O = Let's Encrypt, CN = R11",
+    "   v:NotBefore: Jul 31 03:12:45 2026 GMT; NotAfter: Oct 29 03:12:44 2026 GMT",
+    "---",
+    "subject=CN = tienda.acme-shop.test",
+    "issuer=C = US, O = Let's Encrypt, CN = R11",
+    "notBefore=Jul 31 03:12:45 2026 GMT",
+    "notAfter=Oct 29 03:12:44 2026 GMT",
+    "Verify return code: 10 (certificate has expired)"
+   ]
+  },
+  {
+   "id": "curl-v6",
+   "match": "^curl\\b.*(\\s-6\\b|\\[2001.db8.4c2..10\\])",
+   "out": [
+    "HTTP/1.1 404 Not Found",
+    "Server: nginx/1.18.0 (Ubuntu)",
+    "Date: Thu, 29 Oct 2026 13:45:31 GMT",
+    "Content-Type: text/html",
+    "",
+    "<html><head><title>404 Not Found</title></head><body><center><h1>404 Not Found</h1></center><hr><center>nginx/1.18.0 (Ubuntu)</center></body></html>"
+   ]
+  },
+  {
+   "id": "curl-insecure",
+   "match": "^curl\\b.*(\\s-k\\b|--insecure)",
+   "out": [
+    "HTTP/2 200",
+    "content-type: text/html; charset=UTF-8",
+    "date: Thu, 29 Oct 2026 13:45:31 GMT",
+    "",
+    "<!doctype html><title>Tienda</title>..."
+   ]
+  },
+  {
+   "id": "curl-http",
+   "match": "^curl\\b.*http://",
+   "out": [
+    "HTTP/1.1 308 Permanent Redirect",
+    "Location: https://tienda.acme-shop.test/"
+   ]
+  },
+  {
+   "id": "curl-https",
+   "match": "^curl\\b.*https://",
+   "out": "",
+   "err": "curl: (60) SSL certificate problem: certificate has expired\nMore details here: https://curl.se/docs/sslcerts.html",
+   "exit": 60
+  },
+  {
+   "id": "nc",
+   "match": "^nc\\b",
+   "out": "",
+   "err": "Connection to tienda.acme-shop.test port 443 [tcp/https] succeeded!"
+  },
+  {
+   "id": "vps-docker-ps",
+   "host": "^vps$",
+   "match": "^docker\\s+(ps|container\\s+ls)\\b",
+   "out": [
+    "CONTAINER ID   IMAGE                       STATUS        NAMES",
+    "a1b2c3d4e5f6   dokploy/dokploy:v0.24.3     Up 45 days    dokploy.1.x8c7v6b5n4m3",
+    "b2c3d4e5f6a7   traefik:v3.1.2              Up 45 days    dokploy-traefik",
+    "c3d4e5f6a7b8   postgres:16                 Up 45 days    dokploy-postgres.1.q1w2e3r4t5y6",
+    "d4e5f6a7b8c9   redis:7                     Up 45 days    dokploy-redis.1.u7i8o9p0a1s2",
+    "e5f6a7b8c9d0   tienda-app:latest           Up 2 days     tienda-app-k3j4h5.1.d6f7g8h9j0k1"
+   ]
+  },
+  {
+   "id": "vps-service-ls",
+   "host": "^vps$",
+   "match": "^docker\\s+service\\s+ls\\b",
+   "out": [
+    "ID             NAME                MODE         REPLICAS   IMAGE",
+    "x8c7v6b5n4m3   dokploy             replicated   1/1        dokploy/dokploy:v0.24.3",
+    "q1w2e3r4t5y6   dokploy-postgres    replicated   1/1        postgres:16",
+    "u7i8o9p0a1s2   dokploy-redis       replicated   1/1        redis:7",
+    "d6f7g8h9j0k1   tienda-app-k3j4h5   replicated   1/1        tienda-app:latest"
+   ]
+  },
+  {
+   "id": "vps-traefik-logs",
+   "host": "^vps$",
+   "match": "^docker\\s+(service\\s+)?logs\\b.*traefik",
+   "out": [
+    "2026-09-29T03:20:05Z INF Starting certificate renewal for domains [tienda.acme-shop.test] providerName=letsencrypt.acme",
+    "2026-09-29T03:20:11Z ERR Unable to obtain ACME certificate for domains error=\"unable to generate a certificate for the domains [tienda.acme-shop.test]: error: one or more domains had a problem:\\n[tienda.acme-shop.test] invalid authorization: acme: error: 403 :: urn:ietf:params:acme:error:unauthorized :: 2001:db8:4c2::10: Invalid response from http://tienda.acme-shop.test/.well-known/acme-challenge/kX3vQ9pL2mN8: 404\\n\" ACME CA=https://acme-v02.api.letsencrypt.org/directory providerName=letsencrypt.acme routerName=tienda-app-router-websecure@file rule=\"Host(`tienda.acme-shop.test`)\"",
+    "2026-10-04T03:20:05Z INF Starting certificate renewal for domains [tienda.acme-shop.test] providerName=letsencrypt.acme",
+    "2026-10-04T03:20:11Z ERR Unable to obtain ACME certificate for domains error=\"unable to generate a certificate for the domains [tienda.acme-shop.test]: error: one or more domains had a problem:\\n[tienda.acme-shop.test] invalid authorization: acme: error: 403 :: urn:ietf:params:acme:error:unauthorized :: 2001:db8:4c2::10: Invalid response from http://tienda.acme-shop.test/.well-known/acme-challenge/kX3vQ9pL2mN8: 404\\n\" ACME CA=https://acme-v02.api.letsencrypt.org/directory providerName=letsencrypt.acme routerName=tienda-app-router-websecure@file rule=\"Host(`tienda.acme-shop.test`)\"",
+    "2026-10-09T03:20:05Z INF Starting certificate renewal for domains [tienda.acme-shop.test] providerName=letsencrypt.acme",
+    "2026-10-09T03:20:11Z ERR Unable to obtain ACME certificate for domains error=\"unable to generate a certificate for the domains [tienda.acme-shop.test]: error: one or more domains had a problem:\\n[tienda.acme-shop.test] invalid authorization: acme: error: 403 :: urn:ietf:params:acme:error:unauthorized :: 2001:db8:4c2::10: Invalid response from http://tienda.acme-shop.test/.well-known/acme-challenge/kX3vQ9pL2mN8: 404\\n\" ACME CA=https://acme-v02.api.letsencrypt.org/directory providerName=letsencrypt.acme routerName=tienda-app-router-websecure@file rule=\"Host(`tienda.acme-shop.test`)\"",
+    "2026-10-14T03:20:05Z INF Starting certificate renewal for domains [tienda.acme-shop.test] providerName=letsencrypt.acme",
+    "2026-10-14T03:20:11Z ERR Unable to obtain ACME certificate for domains error=\"unable to generate a certificate for the domains [tienda.acme-shop.test]: error: one or more domains had a problem:\\n[tienda.acme-shop.test] invalid authorization: acme: error: 403 :: urn:ietf:params:acme:error:unauthorized :: 2001:db8:4c2::10: Invalid response from http://tienda.acme-shop.test/.well-known/acme-challenge/kX3vQ9pL2mN8: 404\\n\" ACME CA=https://acme-v02.api.letsencrypt.org/directory providerName=letsencrypt.acme routerName=tienda-app-router-websecure@file rule=\"Host(`tienda.acme-shop.test`)\"",
+    "2026-10-19T03:20:05Z INF Starting certificate renewal for domains [tienda.acme-shop.test] providerName=letsencrypt.acme",
+    "2026-10-19T03:20:11Z ERR Unable to obtain ACME certificate for domains error=\"unable to generate a certificate for the domains [tienda.acme-shop.test]: error: one or more domains had a problem:\\n[tienda.acme-shop.test] invalid authorization: acme: error: 403 :: urn:ietf:params:acme:error:unauthorized :: 2001:db8:4c2::10: Invalid response from http://tienda.acme-shop.test/.well-known/acme-challenge/kX3vQ9pL2mN8: 404\\n\" ACME CA=https://acme-v02.api.letsencrypt.org/directory providerName=letsencrypt.acme routerName=tienda-app-router-websecure@file rule=\"Host(`tienda.acme-shop.test`)\"",
+    "2026-10-24T03:20:05Z INF Starting certificate renewal for domains [tienda.acme-shop.test] providerName=letsencrypt.acme",
+    "2026-10-24T03:20:11Z ERR Unable to obtain ACME certificate for domains error=\"unable to generate a certificate for the domains [tienda.acme-shop.test]: error: one or more domains had a problem:\\n[tienda.acme-shop.test] invalid authorization: acme: error: 403 :: urn:ietf:params:acme:error:unauthorized :: 2001:db8:4c2::10: Invalid response from http://tienda.acme-shop.test/.well-known/acme-challenge/kX3vQ9pL2mN8: 404\\n\" ACME CA=https://acme-v02.api.letsencrypt.org/directory providerName=letsencrypt.acme routerName=tienda-app-router-websecure@file rule=\"Host(`tienda.acme-shop.test`)\"",
+    "2026-10-28T03:20:05Z INF Starting certificate renewal for domains [tienda.acme-shop.test] providerName=letsencrypt.acme",
+    "2026-10-28T03:20:11Z ERR Unable to obtain ACME certificate for domains error=\"unable to generate a certificate for the domains [tienda.acme-shop.test]: error: one or more domains had a problem:\\n[tienda.acme-shop.test] invalid authorization: acme: error: 403 :: urn:ietf:params:acme:error:unauthorized :: 2001:db8:4c2::10: Invalid response from http://tienda.acme-shop.test/.well-known/acme-challenge/kX3vQ9pL2mN8: 404\\n\" ACME CA=https://acme-v02.api.letsencrypt.org/directory providerName=letsencrypt.acme routerName=tienda-app-router-websecure@file rule=\"Host(`tienda.acme-shop.test`)\"",
+    "2026-10-29T03:20:05Z INF Starting certificate renewal for domains [tienda.acme-shop.test] providerName=letsencrypt.acme",
+    "2026-10-29T03:20:11Z ERR Unable to obtain ACME certificate for domains error=\"unable to generate a certificate for the domains [tienda.acme-shop.test]: error: one or more domains had a problem:\\n[tienda.acme-shop.test] invalid authorization: acme: error: 403 :: urn:ietf:params:acme:error:unauthorized :: 2001:db8:4c2::10: Invalid response from http://tienda.acme-shop.test/.well-known/acme-challenge/kX3vQ9pL2mN8: 404\\n\" ACME CA=https://acme-v02.api.letsencrypt.org/directory providerName=letsencrypt.acme routerName=tienda-app-router-websecure@file rule=\"Host(`tienda.acme-shop.test`)\"",
+    "2026-10-29T13:40:52Z DBG Serving default certificate for request: \"tienda.acme-shop.test\" (expired certificate in store)"
+   ]
+  },
+  {
+   "id": "vps-app-logs",
+   "host": "^vps$",
+   "match": "^docker\\s+(service\\s+)?logs\\b.*tienda",
+   "out": [
+    "2026-10-29T13:40:12.004Z GET / 200 3ms",
+    "2026-10-29T13:41:40.551Z GET /health 200 1ms"
+   ]
+  },
+  {
+   "id": "vps-dokploy-logs",
+   "host": "^vps$",
+   "match": "^docker\\s+(service\\s+)?logs\\b.*dokploy",
+   "out": [
+    "2026-10-27T12:30:44.120Z [deploy] tienda-app: build finished, status=done"
+   ]
+  },
+  {
+   "id": "vps-acme-json",
+   "host": "^vps$",
+   "match": "acme\\.json",
+   "out": "{\"letsencrypt\":{\"Account\":{\"Email\":\"ops@acme-shop.test\",\"PrivateKey\":\"****\"},\"Certificates\":[{\"domain\":{\"main\":\"tienda.acme-shop.test\"},\"certificate\":\"****\",\"key\":\"****\",\"Store\":\"default\"}]}}"
+  },
+  {
+   "id": "vps-traefik-conf",
+   "host": "^vps$",
+   "match": "(traefik\\.ya?ml|dynamic/)",
+   "out": [
+    "entryPoints:",
+    "  web: { address: ':80' }",
+    "  websecure: { address: ':443' }",
+    "certificatesResolvers:",
+    "  letsencrypt:",
+    "    acme:",
+    "      email: ops@acme-shop.test",
+    "      storage: /etc/dokploy/traefik/dynamic/acme.json",
+    "      httpChallenge: { entryPoint: web }"
+   ]
+  },
+  {
+   "id": "vps-ip6",
+   "host": "^vps$",
+   "match": "^ip\\s+(-6\\s+)?(a|addr|address)\\b.*(-6|inet6)|^ip\\s+-6",
+   "out": [
+    "1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536",
+    "    inet6 ::1/128 scope host",
+    "2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500",
+    "    inet6 fe80::5054:ff:fe3a:91c2/64 scope link"
+   ]
+  },
+  {
+   "id": "vps-ip",
+   "host": "^vps$",
+   "match": "^(ip\\s+(-[4b]\\w*\\s+)*(a|addr|address)\\b|ifconfig|hostname)",
+   "out": [
+    "2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500",
+    "    inet 198.51.100.20/24 brd 198.51.100.255 scope global eth0",
+    "    inet6 fe80::5054:ff:fe3a:91c2/64 scope link"
+   ]
+  },
+  {
+   "id": "vps-df",
+   "host": "^vps$",
+   "match": "^df\\b",
+   "out": [
+    "Filesystem      Size  Used Avail Use% Mounted on",
+    "/dev/vda1        80G   23G   57G  29% /"
+   ]
+  },
+  {
+   "id": "vps-free",
+   "host": "^vps$",
+   "match": "^free\\b",
+   "out": [
+    "               total        used        free",
+    "Mem:            7940        2210        1120"
+   ]
+  },
+  {
+   "id": "vps-ss",
+   "host": "^vps$",
+   "match": "^(ss|netstat)\\b",
+   "out": [
+    "LISTEN 0 4096 0.0.0.0:80",
+    "LISTEN 0 4096 0.0.0.0:443",
+    "LISTEN 0 4096 0.0.0.0:3000"
+   ]
+  },
+  {
+   "id": "old-ip",
+   "host": "^old-vps$",
+   "match": "^(ip\\s|ifconfig|hostname\\s+-I)",
+   "out": [
+    "2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500",
+    "    inet 203.0.113.10/24 scope global eth0",
+    "    inet6 2001:db8:4c2::10/64 scope global"
+   ]
+  },
+  {
+   "id": "old-nginx-access",
+   "host": "^old-vps$",
+   "match": "access\\.log",
+   "out": [
+    "2600:1f14:804:fd01:5a1:: - - [24/Oct/2026:03:20:09 +0000] \"GET /.well-known/acme-challenge/kX3vQ9pL2mN8 HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 (compatible; Let's Encrypt validation server; +https://www.letsencrypt.org)\"",
+    "2a05:d014:9a:4300:: - - [29/Oct/2026:03:20:10 +0000] \"GET /.well-known/acme-challenge/kX3vQ9pL2mN8 HTTP/1.1\" 404 162 \"-\" \"Mozilla/5.0 (compatible; Let's Encrypt validation server; +https://www.letsencrypt.org)\"",
+    "2800:810:4e1:9a2::7 - - [29/Oct/2026:12:02:44 +0000] \"GET / HTTP/1.1\" 200 612 \"-\" \"Mozilla/5.0 (iPhone; CPU iPhone OS 19_0)\""
+   ]
+  },
+  {
+   "id": "old-nginx-error",
+   "host": "^old-vps$",
+   "match": "error\\.log",
+   "out": [
+    "2026/10/29 03:20:10 [error] 812#812: *4411 open() \"/var/www/html/.well-known/acme-challenge/kX3vQ9pL2mN8\" failed (2: No such file or directory)"
+   ]
+  },
+  {
+   "id": "old-systemctl",
+   "host": "^old-vps$",
+   "match": "^systemctl\\s+(status|is-active)",
+   "out": "nginx.service - A high performance web server\n   Active: active (running) since Mon 2026-08-03"
+  },
+  {
+   "id": "old-docker",
+   "host": "^old-vps$",
+   "match": "^docker\\b",
+   "out": "",
+   "err": "bash: docker: command not found",
+   "exit": 127
+  }
+ ]
+}
