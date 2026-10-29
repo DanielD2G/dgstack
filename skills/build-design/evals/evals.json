@@ -1,0 +1,23 @@
+{
+  "skill_name": "build-design",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Ayudame a crear una home de mobile para una aplicación de navegación de vuelos, con un avioncito en estilo cartoon.",
+      "expected_output": "3 standalone HTML mockups of a mobile home screen for a flight navigation app, each a distinct visual direction informed by Dribbble research, all sharing the same content, each featuring a cartoon-style airplane, plus an index.html comparison page, research.md and decision.md.",
+      "files": [],
+      "assertions": [
+        "Produces at least 3 separate option HTML files",
+        "Includes an index.html that links/embeds every option for comparison",
+        "Includes research.md citing at least 5 concrete reference URLs (dribbble.com or similar)",
+        "Includes decision.md recording the chosen and discarded directions and the critics' points",
+        "Every option includes an inline SVG cartoon airplane",
+        "Every option is designed as a mobile screen (viewport meta and a ~375-430px layout or device frame)",
+        "Every option defines its design tokens as CSS custom properties on :root",
+        "All options share the same content (same flights/destinations/key numbers appear in each)",
+        "Options use visibly different font families or palettes from each other (distinct directions)",
+        "No lorem ipsum or placeholder copy in any option"
+      ]
+    }
+  ]
+}

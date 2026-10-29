@@ -1,0 +1,53 @@
+{
+  "skill_name": "backtrack-for-test",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Ya terminé con los cambios rápidos de hoy en el checkout y las órdenes. Corré backtrack for test: armá los tests de lo que cambiamos.",
+      "expected_output": "Plan that tests coupon logic and filterOrders and explicitly skips copy/CSS/removed button; tests written with node:test in test/; flags the negative-total risk with fixed coupons and the empty /api/orders without status; asks before changing product code; no commits.",
+      "files": [
+        "fixtures/shop"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Listo los cambios rápidos. Hacé backtrack for test de todo lo que cambiamos; tengo el dev server levantado, si necesitás probar algo usalo.",
+      "expected_output": "Same judgment as eval 1, plus: finds the dev server whose cwd is this repo (not the other checkout's server), uses it for a live check that reveals /api/orders returns [], and does not start, restart or kill any server.",
+      "files": [
+        "fixtures/shop"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "You are the background test agent for this branch. Load the skill `backtrack-for-test`\n(Skill tool; if it isn't available, read __SKILL__/SKILL.md) and\nfollow it in BACKGROUND MODE, including references/background-mode.md.\n\nRepo: __REPO__\nBranch: main   Base: 2477608   HEAD at launch: 8d327e1\nRunning servers: none (don't start one; escalate if you need it)\nTest commands: npm test (node --test)\n\nChanges so far (read the diffs yourself; the intent is what matters):\n- Coupons in computeTotal (percent and fixed), checkout passes cart.coupon — src/cart.js, src/ui/checkout.js — the coupon is discounted from the subtotal before shipping. Committed in 8d327e1.\n- \"Comprar\" button renamed to \"Finalizar compra\", \"Seguir comprando\" button removed, primary button now green — src/ui/checkout.js, src/ui/styles.css — copy and style, on purpose. Committed in 8d327e1.\n- Status filter on /api/orders (?status=shipped) — src/orders.js, server.js — without a status it must keep returning every order, like before. Uncommitted; the user is still working on it.\n- Label \"Enviado\" changed to \"En camino\" — src/orders.js — copy, on purpose. Uncommitted.\n\nThe user and I keep editing this same checkout while you work. I'll send UPDATE messages\nafter each change. End each round with a TEST ROUND REPORT, or with an ESCALATION block\nwhen something needs the user's call.\n",
+      "expected_output": "Background round: commits only its own passing tests for committed code (coupons), never commits or stashes the user's uncommitted server.js/src/orders.js, does not edit pricing code in src/cart.js but escalates negative totals with an ESCALATION block, handles the empty-status filter bug without committing user files, ends with a TEST ROUND REPORT.",
+      "files": [
+        "fixtures/shop"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Background brief (same as eval 3), then after round 1: a deliberate uncommitted change to percent coupons announced via UPDATE, plus a silent user edit to src/orders.js that fixes the empty-status filter.",
+      "expected_output": "Round 2 updates its own percent-coupon test to the new intent without reverting src/cart.js, notices the silent orders.js edit through hashes and re-runs the filter test, commits nothing that includes user files or tests for uncommitted code, and ends with a TEST ROUND REPORT.",
+      "files": [
+        "fixtures/shop"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Ya terminé con los cambios rápidos (slugs y el botón de la card). Backtrack for test, porfa.",
+      "expected_output": "Project has no test framework or test script. Uses the built-in node:test runner without asking, adds only a 'test': 'node --test' script, installs nothing, tests slugify (not the button copy), and flags the leading/trailing dash slug bug without fixing it.",
+      "files": [
+        "fixtures/notes-app"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Backtrack for test de lo último que hicimos en el admin.",
+      "expected_output": "Tests the viewer-hides-Exportar rule, flags that renaming the out-of-stock message breaks the restock banner that matches on 'Sin stock', skips the Ayuda reorder and the formatPrice rename, asks before fixing, no commits.",
+      "files": [
+        "fixtures/store-admin"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "skill_name": "improve-ui",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Quiero mejorar este elemento a una estructura mejor.\n\nEl producto es la app Volandito; su front es el archivo improve-ui/evals/files/volandito/index.html (HTML estático, no hay servidor de desarrollo ni otro código). Elemento seleccionado en la página: <section class=\"search\" aria-label=\"Buscar vuelo\"> — la card de búsqueda con las pestañas \"Ida y vuelta / Solo ida / Rastrear\", origen EZE Buenos Aires → destino MAD Madrid con botón de intercambio, \"📅 Fechas 12 – 26 nov\", \"🧳 Pasajeros 2 adultos\" y el botón \"Buscar vuelos\". Está debajo del hero con el avioncito y arriba de \"Tu próximo vuelo\".",
+      "expected_output": "option-0-current plus 3 structurally different redesigns of the Volandito search card that stay inside its identity (colors, Baloo 2/Nunito, chunky outlines, hard shadows), with identity.md, tokens.json, research.md, decision.md and an index.html comparing them.",
+      "files": [
+        "evals/files/volandito/index.html"
+      ],
+      "assertions": [
+        "Includes option-0-current.html rebuilding the current element as baseline",
+        "Produces at least 3 redesigned option HTML files besides the current one",
+        "Includes identity.md and tokens.json describing the product identity",
+        "No option uses colors or fonts outside the original product's palette (check_brand against the full original palette)",
+        "Every option uses the product fonts Baloo 2 and Nunito",
+        "Every option keeps the element's content: EZE, MAD, Buscar vuelos, fechas, pasajeros and the three trip modes",
+        "Includes research.md citing at least 5 reference URLs and decision.md",
+        "Includes an index.html that lists the current version and every option"
+      ]
+    }
+  ]
+}

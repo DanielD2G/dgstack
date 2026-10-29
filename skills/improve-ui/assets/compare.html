@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compare options</title>
+<style>
+  :root {
+    --bg: #f4f4f2; --panel: #ffffff; --text: #1b1b1a; --muted: #6b6b66;
+    --line: #e2e2dd; --accent: #1b1b1a; --accent-text: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #121211; --panel: #1c1c1b; --text: #ededea; --muted: #9a9a94;
+            --line: #2c2c2a; --accent: #ededea; --accent-text: #121211; }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--bg); color: var(--text);
+         font: 14px/1.4 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+         display: flex; flex-direction: column; }
+  header { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center;
+           padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--panel); }
+  h1 { font-size: 15px; margin: 0 8px 0 0; font-weight: 600; }
+  .group { display: flex; gap: 4px; flex-wrap: wrap; }
+  button { font: inherit; color: var(--text); background: transparent; cursor: pointer;
+           border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
+  button:hover { border-color: var(--muted); }
+  button[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  .desc { color: var(--muted); flex: 1 1 260px; min-width: 0; }
+  main { flex: 1; min-height: 0; display: grid; gap: 12px; padding: 12px; overflow: auto; }
+  main.single { grid-template-columns: 1fr; }
+  main.grid { grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); }
+  .frame { display: flex; flex-direction: column; min-height: 0; background: var(--panel);
+           border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .frame-bar { display: flex; justify-content: space-between; gap: 8px; padding: 6px 10px;
+               border-bottom: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+  .frame-bar a { color: inherit; }
+  .viewport { flex: 1; display: flex; justify-content: center; background: var(--bg); overflow: auto; }
+  iframe { border: 0; background: #fff; width: 100%; height: 100%; min-height: 70vh; }
+  main.grid iframe { min-height: 60vh; }
+  .mobile iframe { width: 375px; flex: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title">Options</h1>
+  <div class="group" id="tabs" role="group" aria-label="Option"></div>
+  <div class="group" role="group" aria-label="View">
+    <button id="mode-single" aria-pressed="true">One</button>
+    <button id="mode-grid" aria-pressed="false">All</button>
+  </div>
+  <div class="group" role="group" aria-label="Width">
+    <button id="vp-desktop" aria-pressed="true">Desktop</button>
+    <button id="vp-mobile" aria-pressed="false">Mobile</button>
+  </div>
+  <span class="desc" id="desc"></span>
+</header>
+<main id="stage" class="single"></main>
+<script>
+  // Fill in when copying: one object per option.
+  const TITLE = "Options";
+  const OPTIONS = [
+    // { file: "option-1-name.html", name: "Name", desc: "One-line idea" },
+  ];
+
+  const state = { current: 0, mode: "single", mobile: false };
+  const $ = (id) => document.getElementById(id);
+  document.title = TITLE; $("title").textContent = TITLE;
+
+  function press(id, on) { $(id).setAttribute("aria-pressed", String(on)); }
+
+  function frame(opt, i) {
+    const el = document.createElement("section");
+    el.className = "frame";
+    el.innerHTML = `<div class="frame-bar"><span>${i + 1}. ${opt.name}</span>` +
+      `<a href="${opt.file}" target="_blank" rel="noopener">open ↗</a></div>` +
+      `<div class="viewport${state.mobile ? " mobile" : ""}"><iframe src="${opt.file}" title="${opt.name}" loading="lazy"></iframe></div>`;
+    return el;
+  }
+
+  function render() {
+    const stage = $("stage");
+    stage.className = state.mode;
+    stage.replaceChildren();
+    const list = state.mode === "single" ? [OPTIONS[state.current]] : OPTIONS;
+    list.forEach((opt) => opt && stage.append(frame(opt, OPTIONS.indexOf(opt))));
+    [...$("tabs").children].forEach((b, i) => press(b.id, state.mode === "single" && i === state.current));
+    $("desc").textContent = state.mode === "single" && OPTIONS[state.current] ? OPTIONS[state.current].desc : "";
+    press("mode-single", state.mode === "single"); press("mode-grid", state.mode === "grid");
+    press("vp-desktop", !state.mobile); press("vp-mobile", state.mobile);
+    try { localStorage.setItem("compare-state", JSON.stringify(state)); } catch (e) {}
+  }
+
+  OPTIONS.forEach((opt, i) => {
+    const b = document.createElement("button");
+    b.id = "tab-" + i; b.textContent = `${i + 1}. ${opt.name}`;
+    b.onclick = () => { state.current = i; state.mode = "single"; render(); };
+    $("tabs").append(b);
+  });
+  $("mode-single").onclick = () => { state.mode = "single"; render(); };
+  $("mode-grid").onclick = () => { state.mode = "grid"; render(); };
+  $("vp-desktop").onclick = () => { state.mobile = false; render(); };
+  $("vp-mobile").onclick = () => { state.mobile = true; render(); };
+  document.addEventListener("keydown", (e) => {
+    const n = Number(e.key);
+    if (n >= 1 && n <= OPTIONS.length) { state.current = n - 1; state.mode = "single"; render(); }
+  });
+
+  try { Object.assign(state, JSON.parse(localStorage.getItem("compare-state")) || {}); } catch (e) {}
+  if (state.current >= OPTIONS.length) state.current = 0;
+  render();
+</script>
+</body>
+</html>

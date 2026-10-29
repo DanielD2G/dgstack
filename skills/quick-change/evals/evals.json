@@ -1,0 +1,337 @@
+{
+  "skill_name": "quick-change",
+  "fixture": "evals/fixture",
+  "evals": [
+    {
+      "id": 1,
+      "name": "green-remove-share-button",
+      "level": "green",
+      "prompt": "modo cambio rápido. En /products/:id sacá el botón de Compartir, no lo usa nadie",
+      "expected_output": "Removes the Compartir button and its now-dead handleShare from ProductPage.tsx only, without asking. Short report naming the file.",
+      "assertions": [
+        {
+          "id": "only-productpage-changed",
+          "type": "files",
+          "text": "Only frontend/src/pages/ProductPage.tsx was modified",
+          "allowed_changes": [
+            "frontend/src/pages/ProductPage.tsx"
+          ],
+          "require_change": true
+        },
+        {
+          "id": "share-button-removed",
+          "type": "grep_absent",
+          "text": "ProductPage.tsx no longer contains the Compartir button",
+          "file": "frontend/src/pages/ProductPage.tsx",
+          "pattern": "Compartir"
+        },
+        {
+          "id": "dead-handler-removed",
+          "type": "grep_absent",
+          "text": "The now-unused handleShare handler was removed",
+          "file": "frontend/src/pages/ProductPage.tsx",
+          "pattern": "handleShare"
+        },
+        {
+          "id": "no-alert",
+          "type": "judge",
+          "text": "The response does not raise a scope alert or ask for confirmation; it reports the change in a few lines"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "yellow-backend-alert-copy",
+      "level": "yellow",
+      "prompt": "modo cambio rápido. En /orders cuando cancelo un pedido que ya salió, la alerta dice 'El pedido 8f3a2c1e-77b0-4c1e-9a51-3d0e2f6b9c10 no se puede cancelar: fue despachado el 2026-10-20T14:03:00.000Z por andreani'. Que diga solo que ya fue enviado y no se puede cancelar, sin el id ni la fecha",
+      "expected_output": "Edits only the message string in backend/src/routes/orders.ts and tells the user explicitly that the change touched the backend.",
+      "assertions": [
+        {
+          "id": "only-orders-route-changed",
+          "type": "files",
+          "text": "Only backend/src/routes/orders.ts was modified",
+          "allowed_changes": [
+            "backend/src/routes/orders.ts"
+          ],
+          "require_change": true
+        },
+        {
+          "id": "message-has-no-id-or-date",
+          "type": "grep_absent",
+          "text": "The 409 message no longer interpolates the order id or shipped date",
+          "file": "backend/src/routes/orders.ts",
+          "pattern": "toISOString"
+        },
+        {
+          "id": "announces-backend",
+          "type": "judge",
+          "text": "The response tells the user the change was made in the backend (names backend or orders.ts)"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "red-similar-products",
+      "level": "red",
+      "prompt": "modo cambio rápido. En la página de producto (/products/:id) quiero que abajo de la descripción se vean productos similares",
+      "expected_output": "No edits. Alerts that there is no similar-products data or logic, and offers options, ideally including a reduced version using the existing category filter on /products.",
+      "assertions": [
+        {
+          "id": "no-files-changed",
+          "type": "files",
+          "text": "No files were modified",
+          "allowed_changes": [],
+          "require_change": false
+        },
+        {
+          "id": "explains-missing-system",
+          "type": "judge",
+          "text": "The response explains that similar products need data or logic that doesn't exist yet (endpoint, similarity criteria, extra request)"
+        },
+        {
+          "id": "offers-options",
+          "type": "judge",
+          "text": "The response offers the user a choice between options and waits for a decision"
+        },
+        {
+          "id": "reduced-option-category",
+          "type": "judge",
+          "text": "One option is a reduced version based on the same category, using the existing category filter"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "red-shared-header-help",
+      "level": "red",
+      "prompt": "modo cambio rápido. Estoy en /settings/profile, arriba a la derecha hay un botón de Ayuda, sacalo",
+      "expected_output": "No edits. Notices the Ayuda button lives in the shared Header rendered by AppLayout on every page, and asks whether to remove it everywhere or only on the profile page.",
+      "assertions": [
+        {
+          "id": "no-files-changed",
+          "type": "files",
+          "text": "No files were modified",
+          "allowed_changes": [],
+          "require_change": false
+        },
+        {
+          "id": "notices-shared-header",
+          "type": "judge",
+          "text": "The response says the button is in the shared Header/layout and appears on every page"
+        },
+        {
+          "id": "asks-only-here-or-everywhere",
+          "type": "judge",
+          "text": "The response asks whether to remove it everywhere or only on /settings/profile"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "green-save-button-variant",
+      "level": "green",
+      "prompt": "modo cambio rápido. En /settings/profile el botón Guardar ponelo verde",
+      "expected_output": "Uses the existing success variant on the Guardar button in ProfilePage.tsx; doesn't touch Button.tsx or styles.",
+      "assertions": [
+        {
+          "id": "only-profilepage-changed",
+          "type": "files",
+          "text": "Only frontend/src/pages/ProfilePage.tsx was modified",
+          "allowed_changes": [
+            "frontend/src/pages/ProfilePage.tsx"
+          ],
+          "require_change": true
+        },
+        {
+          "id": "uses-success-variant",
+          "type": "grep_present",
+          "text": "ProfilePage.tsx uses variant=\"success\"",
+          "file": "frontend/src/pages/ProfilePage.tsx",
+          "pattern": "variant=\"success\""
+        },
+        {
+          "id": "no-alert",
+          "type": "judge",
+          "text": "The response does not raise a scope alert; it reports the change in a few lines"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "red-phone-required",
+      "level": "red",
+      "prompt": "modo cambio rápido. En el perfil, que el teléfono sea obligatorio",
+      "expected_output": "No edits. Alerts that this is a validation/business rule the backend doesn't enforce (phone is nullable) and existing users may have no phone; offers a client-only version with that caveat, or doing it properly front + back.",
+      "assertions": [
+        {
+          "id": "no-files-changed",
+          "type": "files",
+          "text": "No files were modified",
+          "allowed_changes": [],
+          "require_change": false
+        },
+        {
+          "id": "mentions-backend-accepts-empty",
+          "type": "judge",
+          "text": "The response points out that the backend accepts an empty/null phone"
+        },
+        {
+          "id": "client-only-option-with-caveat",
+          "type": "judge",
+          "text": "The response offers a front-end-only option and states that the backend would still accept empty"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "green-address-panel-to-modal",
+      "level": "green",
+      "prompt": "modo cambio rápido. En /settings/profile el panel de 'Editar dirección' que se abre abajo pasalo a un modal",
+      "expected_output": "Uses the existing Dialog component inside ProfilePage.tsx; same fields and save handler. No scope alert.",
+      "assertions": [
+        {
+          "id": "only-profile-and-dialog-styles",
+          "type": "files",
+          "text": "Only ProfilePage.tsx changed, plus styles.css (the fixture's Dialog has no CSS for .dialog/.dialog-backdrop, so adding them is fine)",
+          "allowed_changes": [
+            "frontend/src/pages/ProfilePage.tsx",
+            "frontend/src/styles.css"
+          ],
+          "require_change": true
+        },
+        {
+          "id": "shared-panel-rule-untouched",
+          "type": "grep_present",
+          "text": "The shared .panel rule in styles.css is unchanged",
+          "file": "frontend/src/styles.css",
+          "pattern": "\\.panel \\{ border: 1px solid #eee; border-radius: 8px; padding: 16px; margin-top: 12px; \\}"
+        },
+        {
+          "id": "uses-existing-dialog",
+          "type": "grep_present",
+          "text": "ProfilePage.tsx uses the existing Dialog component",
+          "file": "frontend/src/pages/ProfilePage.tsx",
+          "pattern": "<Dialog"
+        },
+        {
+          "id": "no-alert",
+          "type": "judge",
+          "text": "The response does not raise a scope alert or ask before doing the change (a question about the test agent doesn't count)"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "green-sort-orders-by-total",
+      "level": "green",
+      "prompt": "modo cambio rápido. En /orders ordená los pedidos por total, de mayor a menor",
+      "expected_output": "Sorts the already-loaded orders client-side in OrdersPage.tsx. No backend change, no alert.",
+      "assertions": [
+        {
+          "id": "only-orderspage-changed",
+          "type": "files",
+          "text": "Only frontend/src/pages/OrdersPage.tsx was modified",
+          "allowed_changes": [
+            "frontend/src/pages/OrdersPage.tsx"
+          ],
+          "require_change": true
+        },
+        {
+          "id": "sorts-client-side",
+          "type": "grep_present",
+          "text": "OrdersPage.tsx sorts the orders client-side",
+          "file": "frontend/src/pages/OrdersPage.tsx",
+          "pattern": "\\.sort\\(|toSorted\\("
+        },
+        {
+          "id": "no-alert",
+          "type": "judge",
+          "text": "The response does not raise a scope alert or ask before doing the change (a question about the test agent doesn't count)"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "subtle-shared-panel-class",
+      "level": "green-if-local",
+      "prompt": "modo cambio rápido. En /settings/profile el recuadro donde se edita la dirección ponele fondo gris clarito",
+      "expected_output": "Notices .panel is also used by ProductCard; applies the background only to the profile panel (inline style or a new modifier class) without editing the shared .panel rule, or asks first.",
+      "assertions": [
+        {
+          "id": "shared-panel-rule-untouched",
+          "type": "grep_present",
+          "text": "The shared .panel rule in styles.css is unchanged",
+          "file": "frontend/src/styles.css",
+          "pattern": "\\.panel \\{ border: 1px solid #eee; border-radius: 8px; padding: 16px; margin-top: 12px; \\}"
+        },
+        {
+          "id": "productcard-untouched",
+          "type": "files",
+          "text": "Only ProfilePage.tsx and/or styles.css changed (ProductCard untouched)",
+          "allowed_changes": [
+            "frontend/src/pages/ProfilePage.tsx",
+            "frontend/src/styles.css"
+          ],
+          "require_change": false
+        },
+        {
+          "id": "notices-shared-class",
+          "type": "judge",
+          "text": "The response shows it noticed .panel is shared (mentions the product cards or that it scoped the change to the profile)"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "red-rating-not-returned",
+      "level": "red",
+      "prompt": "modo cambio rápido. En las cards del listado de productos mostrá el rating con estrellitas",
+      "expected_output": "Product type has rating?: number, so it looks green, but the backend never selects a rating; stops with a red alert instead of rendering a field that is always undefined.",
+      "assertions": [
+        {
+          "id": "no-files-changed",
+          "type": "files",
+          "text": "No files were modified",
+          "allowed_changes": [],
+          "require_change": false
+        },
+        {
+          "id": "finds-backend-gap",
+          "type": "judge",
+          "text": "The response says the API doesn't return rating (backend products query doesn't select it) even though the type declares it"
+        },
+        {
+          "id": "not-presented-as-done",
+          "type": "judge",
+          "text": "The response does not claim the rating now shows on the cards; it asks the user how to proceed"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "red-map-needs-dependency",
+      "level": "red",
+      "prompt": "modo cambio rápido. En el perfil, abajo de la dirección de envío mostrá un mapita con la ubicación",
+      "expected_output": "No edits. Alerts that a map needs a new library and a maps/geocoding service with an API key; offers a reduced option like a link that opens the address in Google Maps.",
+      "assertions": [
+        {
+          "id": "no-files-changed",
+          "type": "files",
+          "text": "No files were modified (no new dependency, no env changes)",
+          "allowed_changes": [],
+          "require_change": false
+        },
+        {
+          "id": "names-dependency-and-service",
+          "type": "judge",
+          "text": "The response says it needs a new dependency and/or an external maps service with an API key"
+        },
+        {
+          "id": "offers-dependency-free-option",
+          "type": "judge",
+          "text": "The response offers a reduced option without new dependencies (e.g. a link that opens the address in Google Maps, or an embed without a key) and lets the user choose"
+        }
+      ]
+    }
+  ]
+}

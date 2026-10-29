@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Volandito · Inicio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky-top:#7cc8ff;
+    --sky-bot:#c9ecff;
+    --ink:#1d2b4f;
+    --ink-soft:#5a6a8f;
+    --paper:#ffffff;
+    --bg:#eef6ff;
+    --sun:#ffc93c;
+    --coral:#ff6b5b;
+    --mint:#3fd0a4;
+    --plane:#ffffff;
+    --plane-accent:#ff6b5b;
+    --line:#1d2b4f;
+    --card-shadow:0 4px 0 rgba(29,43,79,.12);
+    --radius:22px;
+    --hero-ink:#1d2b4f;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --sky-top:#1c2a5c; --sky-bot:#3a4a8a;
+      --ink:#f1f5ff; --ink-soft:#a9b6d8;
+      --paper:#1f2a4a; --bg:#121a33;
+      --card-shadow:0 4px 0 rgba(0,0,0,.35);
+      --hero-ink:#f1f5ff; --line:#0a1026;
+    }
+  }
+  :root[data-theme="dark"]{
+    --sky-top:#1c2a5c; --sky-bot:#3a4a8a;
+    --ink:#f1f5ff; --ink-soft:#a9b6d8;
+    --paper:#1f2a4a; --bg:#121a33;
+    --card-shadow:0 4px 0 rgba(0,0,0,.35);
+      --hero-ink:#f1f5ff; --line:#0a1026;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#d9e4f2}
+  body{
+    font-family:"Nunito",system-ui,sans-serif;color:var(--ink);
+    min-height:100vh;display:flex;justify-content:center;align-items:flex-start;
+  }
+  @media (min-width:480px){ body{padding:32px 0} }
+  .phone{
+    width:100%;max-width:400px;min-height:100vh;background:var(--bg);
+    position:relative;overflow:hidden;display:flex;flex-direction:column;
+  }
+  @media (min-width:480px){
+    .phone{min-height:840px;border-radius:44px;border:10px solid #1d2b4f;box-shadow:0 30px 60px rgba(29,43,79,.3)}
+  }
+  h1,h2,.brand{font-family:"Baloo 2",cursive}
+
+  /* HERO */
+  .hero{
+    background:linear-gradient(180deg,var(--sky-top),var(--sky-bot));
+    padding:14px 16px 64px;position:relative;overflow:hidden;
+    border-radius:0 0 36px 36px;
+  }
+  .status{display:flex;justify-content:space-between;font-size:13px;font-weight:800;color:var(--hero-ink);padding:0 6px 10px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;position:relative;z-index:3}
+  .brand{font-size:24px;font-weight:800;color:var(--hero-ink);display:flex;align-items:center;gap:6px}
+  .icon-btn{
+    width:42px;height:42px;border-radius:14px;border:2.5px solid #1d2b4f;background:#fff;
+    display:grid;place-items:center;box-shadow:0 3px 0 #1d2b4f;position:relative;cursor:pointer;
+  }
+  .icon-btn .dot{position:absolute;top:6px;right:7px;width:9px;height:9px;border-radius:50%;background:var(--coral);border:2px solid #fff}
+  .greet{position:relative;z-index:3;margin-top:14px;color:var(--hero-ink)}
+  .greet p{font-weight:700;opacity:.8}
+  .greet h1{font-size:30px;line-height:1.05;font-weight:800}
+
+  .sky{position:absolute;inset:0;pointer-events:none}
+  .sun{position:absolute;right:-30px;top:120px;width:90px;height:90px;border-radius:50%;background:var(--sun);border:3px solid #1d2b4f;box-shadow:0 0 0 10px rgba(255,201,60,.3)}
+  .cloud{position:absolute;animation:drift linear infinite}
+  .cloud.c1{top:120px;left:-90px;animation-duration:26s}
+  .cloud.c2{top:170px;left:-140px;animation-duration:38s;animation-delay:-14s;transform:scale(.7)}
+  .cloud.c3{top:90px;left:-120px;animation-duration:32s;animation-delay:-24s;transform:scale(.55)}
+  @keyframes drift{to{left:110%}}
+
+  .plane-wrap{position:relative;z-index:2;height:150px;margin-top:2px}
+  .plane{position:absolute;left:50%;top:10px;width:220px;margin-left:-110px;animation:bob 3.2s ease-in-out infinite}
+  .trail{position:absolute;left:-40px;top:72px;width:150px;height:40px}
+  .trail path{stroke-dasharray:6 10;animation:dash 1s linear infinite}
+  @keyframes dash{to{stroke-dashoffset:-16}}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-10px) rotate(2deg)}}
+  .prop{transform-origin:206px 74px;animation:spin .25s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .speech{
+    position:absolute;right:6px;top:0;background:#fff;border:2.5px solid #1d2b4f;border-radius:16px 16px 16px 4px;
+    padding:6px 10px;font-weight:800;font-size:13px;box-shadow:0 3px 0 #1d2b4f;color:#1d2b4f;
+    animation:pop 4s ease-in-out infinite;
+  }
+  @keyframes pop{0%,70%,100%{transform:scale(1)}80%{transform:scale(1.08)}}
+
+  /* SEARCH CARD */
+  .search{
+    margin:-48px 16px 0;background:var(--paper);border-radius:var(--radius);border:2.5px solid var(--line);
+    box-shadow:0 5px 0 var(--line);padding:14px;position:relative;z-index:4;
+  }
+  .tabs{display:flex;gap:6px;background:var(--bg);border-radius:14px;padding:4px;margin-bottom:12px}
+  .tabs button{flex:1;border:0;background:transparent;font:800 13px "Nunito";color:var(--ink-soft);padding:8px 0;border-radius:10px;cursor:pointer}
+  .tabs button.on{background:var(--sun);color:#1d2b4f;box-shadow:0 2px 0 #1d2b4f}
+  .route{display:flex;align-items:center;gap:10px}
+  .city{flex:1;min-width:0}
+  .city small{font-size:11px;font-weight:800;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.06em}
+  .city b{display:block;font-family:"Baloo 2";font-size:30px;line-height:1;font-weight:800}
+  .city span{font-size:13px;color:var(--ink-soft);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  .city.r{text-align:right}
+  .swap{width:44px;height:44px;border-radius:50%;border:2.5px solid var(--line);background:var(--mint);display:grid;place-items:center;flex:none;cursor:pointer;transition:transform .3s}
+  .swap:active{transform:rotate(180deg)}
+  .meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+  .meta div{background:var(--bg);border-radius:14px;padding:8px 12px}
+  .meta small{font-size:11px;font-weight:800;color:var(--ink-soft)}
+  .meta p{font-weight:800;font-size:14px}
+  .cta{
+    width:100%;margin-top:12px;border:2.5px solid #1d2b4f;background:var(--coral);color:#fff;
+    font:800 17px "Baloo 2";padding:12px;border-radius:16px;box-shadow:0 4px 0 #1d2b4f;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .1s, box-shadow .1s;
+  }
+  .cta:active{transform:translateY(3px);box-shadow:0 1px 0 #1d2b4f}
+
+  main{padding:18px 16px 110px;display:flex;flex-direction:column;gap:20px}
+  .sec-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+  .sec-head h2{font-size:20px;font-weight:800}
+  .sec-head a{font-weight:800;font-size:13px;color:var(--coral);text-decoration:none}
+
+  /* LIVE FLIGHT */
+  .live{background:var(--paper);border-radius:var(--radius);border:2.5px solid var(--line);box-shadow:var(--card-shadow);padding:14px}
+  .live-top{display:flex;justify-content:space-between;align-items:center}
+  .badge{font-size:11px;font-weight:800;padding:4px 9px;border-radius:999px;background:#dff8ee;color:#108a64;display:inline-flex;align-items:center;gap:5px}
+  .badge i{width:7px;height:7px;border-radius:50%;background:#16b886;animation:blink 1.2s infinite}
+  @keyframes blink{50%{opacity:.25}}
+  .fno{font-weight:800;font-size:13px;color:var(--ink-soft)}
+  .track{display:flex;align-items:center;gap:10px;margin:12px 0 6px}
+  .track b{font-family:"Baloo 2";font-size:22px;font-weight:800}
+  .bar{flex:1;height:8px;border-radius:99px;background:var(--bg);position:relative}
+  .bar .fill{position:absolute;inset:0 38% 0 0;background:var(--mint);border-radius:99px}
+  .bar .mini{position:absolute;left:62%;top:50%;transform:translate(-50%,-50%)}
+  .live-foot{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--ink-soft)}
+  .live-foot strong{color:var(--ink)}
+
+  /* QUICK */
+  .quick{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .q{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;font-weight:800;text-align:center;background:none;border:0;color:var(--ink);cursor:pointer}
+  .q span.ic{width:58px;height:58px;border-radius:20px;border:2.5px solid var(--line);display:grid;place-items:center;box-shadow:var(--card-shadow);font-size:26px}
+
+  /* DESTINATIONS */
+  .dests{display:flex;gap:12px;overflow-x:auto;margin:0 -16px;padding:2px 16px 8px;scroll-snap-type:x mandatory;scroll-padding-left:16px;scrollbar-width:none}
+  .dests::-webkit-scrollbar{display:none}
+  .dest{flex:none;width:150px;border-radius:var(--radius);border:2.5px solid var(--line);overflow:hidden;background:var(--paper);box-shadow:var(--card-shadow);scroll-snap-align:start}
+  .dest .art{height:96px;display:grid;place-items:center;font-size:44px}
+  .dest .info{padding:8px 10px 10px}
+  .dest .info b{font-family:"Baloo 2";font-size:17px;font-weight:800;display:block;line-height:1.1}
+  .dest .info span{font-size:12px;color:var(--ink-soft);font-weight:700}
+  .dest .price{font-weight:800;color:var(--coral);font-size:14px}
+
+  /* NAV */
+  .nav{
+    position:absolute;left:12px;right:12px;bottom:14px;height:68px;background:var(--paper);border:2.5px solid var(--line);
+    border-radius:24px;box-shadow:0 4px 0 var(--line);display:flex;justify-content:space-around;align-items:center;z-index:10;
+  }
+  @media (max-width:479px){ .nav{position:fixed;max-width:376px;margin:0 auto} }
+  .nav button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;font:800 11px "Nunito";color:var(--ink-soft);cursor:pointer}
+  .nav button.on{color:var(--ink)}
+  .nav .fab{width:58px;height:58px;margin-top:-34px;border-radius:50%;background:var(--sun);border:2.5px solid #1d2b4f;box-shadow:0 4px 0 #1d2b4f;display:grid;place-items:center}
+  svg{display:block}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <section class="hero">
+    <div class="status"><span>9:41</span><span>●●● 5G ▮</span></div>
+    <div class="sky" aria-hidden="true">
+      <div class="sun"></div>
+      <svg class="cloud c1" width="110" height="50" viewBox="0 0 110 50"><path d="M20 44h70a16 16 0 0 0 0-32 22 22 0 0 0-40-4 16 16 0 0 0-30 12A12 12 0 0 0 20 44z" fill="#fff" stroke="#1d2b4f" stroke-width="2.5"/></svg>
+      <svg class="cloud c2" width="110" height="50" viewBox="0 0 110 50"><path d="M20 44h70a16 16 0 0 0 0-32 22 22 0 0 0-40-4 16 16 0 0 0-30 12A12 12 0 0 0 20 44z" fill="#fff" stroke="#1d2b4f" stroke-width="2.5"/></svg>
+      <svg class="cloud c3" width="110" height="50" viewBox="0 0 110 50"><path d="M20 44h70a16 16 0 0 0 0-32 22 22 0 0 0-40-4 16 16 0 0 0-30 12A12 12 0 0 0 20 44z" fill="#fff" stroke="#1d2b4f" stroke-width="2.5"/></svg>
+    </div>
+
+    <div class="topbar">
+      <div class="brand">Volandito</div>
+      <button class="icon-btn" aria-label="Notificaciones">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1d2b4f" stroke-width="2.5" stroke-linecap="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></svg>
+        <span class="dot"></span>
+      </button>
+    </div>
+
+    <div class="greet">
+      <p>¡Hola, Dani! 👋</p>
+      <h1>¿A dónde<br>volamos hoy?</h1>
+    </div>
+
+    <div class="plane-wrap" aria-hidden="true">
+      <div class="speech">¡Fiuuu!</div>
+      <svg class="plane" viewBox="0 0 230 140">
+        <g class="trail-g">
+          <path d="M-30 86 C 0 80, 20 96, 40 88" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="6 10">
+            <animate attributeName="stroke-dashoffset" from="0" to="-32" dur="1s" repeatCount="indefinite"/>
+          </path>
+        </g>
+        <!-- tail fin -->
+        <path d="M40 72 L26 34 Q24 26 32 28 L62 62 Z" fill="var(--plane-accent)" stroke="#1d2b4f" stroke-width="3" stroke-linejoin="round"/>
+        <!-- back wing -->
+        <path d="M110 70 L92 40 Q90 34 97 35 L136 66 Z" fill="#e6eefc" stroke="#1d2b4f" stroke-width="3" stroke-linejoin="round"/>
+        <!-- body -->
+        <path d="M36 70 Q36 56 60 56 L170 56 Q204 56 206 76 Q204 98 170 98 L64 98 Q40 98 36 84 Z" fill="var(--plane)" stroke="#1d2b4f" stroke-width="3" stroke-linejoin="round"/>
+        <!-- stripe -->
+        <path d="M44 86 L196 86" stroke="var(--plane-accent)" stroke-width="5" stroke-linecap="round"/>
+        <!-- windows -->
+        <circle cx="90" cy="72" r="5" fill="#7cc8ff" stroke="#1d2b4f" stroke-width="2.5"/>
+        <circle cx="110" cy="72" r="5" fill="#7cc8ff" stroke="#1d2b4f" stroke-width="2.5"/>
+        <circle cx="130" cy="72" r="5" fill="#7cc8ff" stroke="#1d2b4f" stroke-width="2.5"/>
+        <!-- cockpit face -->
+        <path d="M168 62 Q188 62 194 74 L168 74 Z" fill="#7cc8ff" stroke="#1d2b4f" stroke-width="2.5" stroke-linejoin="round"/>
+        <circle cx="176" cy="69" r="2.6" fill="#1d2b4f"/>
+        <circle cx="186" cy="70" r="2.6" fill="#1d2b4f"/>
+        <circle cx="177" cy="68" r="1" fill="#fff"/>
+        <circle cx="187" cy="69" r="1" fill="#fff"/>
+        <ellipse cx="172" cy="81" rx="5" ry="3" fill="#ffb3a8"/>
+        <path d="M180 82 Q186 88 193 82" stroke="#1d2b4f" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- front wing -->
+        <path d="M104 84 L80 122 Q78 128 86 127 L140 88 Z" fill="var(--plane-accent)" stroke="#1d2b4f" stroke-width="3" stroke-linejoin="round"/>
+        <!-- nose + propeller -->
+        <circle cx="206" cy="76" r="5" fill="var(--sun)" stroke="#1d2b4f" stroke-width="2.5"/>
+        <g>
+          <ellipse cx="206" cy="76" rx="3.5" ry="22" fill="#1d2b4f" opacity=".75">
+            <animateTransform attributeName="transform" type="scale" values="1 1;1 .2;1 1" dur=".2s" repeatCount="indefinite" additive="sum"/>
+          </ellipse>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <section class="search" aria-label="Buscar vuelo">
+    <div class="tabs" role="tablist">
+      <button class="on" role="tab" aria-selected="true">Ida y vuelta</button>
+      <button role="tab" aria-selected="false">Solo ida</button>
+      <button role="tab" aria-selected="false">Rastrear</button>
+    </div>
+    <div class="route">
+      <div class="city"><small>Desde</small><b id="from">EZE</b><span id="fromName">Buenos Aires</span></div>
+      <button class="swap" id="swap" aria-label="Intercambiar origen y destino">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1d2b4f" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h14l-4-4M20 16H6l4 4"/></svg>
+      </button>
+      <div class="city r"><small>Hacia</small><b id="to">MAD</b><span id="toName">Madrid</span></div>
+    </div>
+    <div class="meta">
+      <div><small>📅 Fechas</small><p>12 – 26 nov</p></div>
+      <div><small>🧳 Pasajeros</small><p>2 adultos</p></div>
+    </div>
+    <button class="cta">
+      Buscar vuelos
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>
+    </button>
+  </section>
+
+  <main>
+    <section>
+      <div class="sec-head"><h2>Tu próximo vuelo</h2><a href="#">Ver detalle</a></div>
+      <article class="live">
+        <div class="live-top">
+          <span class="badge"><i></i> En el aire</span>
+          <span class="fno">VL 2048 · Puerta B12</span>
+        </div>
+        <div class="track">
+          <b>EZE</b>
+          <div class="bar">
+            <div class="fill"></div>
+            <svg class="mini" width="26" height="26" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#1d2b4f" stroke-width="2"/><path d="M18 13v-1.3l-5-3.2V5a1 1 0 0 0-2 0v3.5l-5 3.2V13l5-1.6V15l-1.3 1v1l2.3-.7 2.3.7v-1L13 15v-3.6z" fill="#ff6b5b" transform="rotate(90 12 12)"/></svg>
+          </div>
+          <b>MAD</b>
+        </div>
+        <div class="live-foot">
+          <span>Salió <strong>22:15</strong></span>
+          <span>Faltan <strong>4h 32m</strong></span>
+          <span>Llega <strong>14:40</strong></span>
+        </div>
+      </article>
+    </section>
+
+    <section>
+      <div class="quick">
+        <button class="q"><span class="ic" style="background:#ffe7a3">🎫</span>Check-in</button>
+        <button class="q"><span class="ic" style="background:#c8f1e2">🗺️</span>Mapa</button>
+        <button class="q"><span class="ic" style="background:#ffd4cd">🧳</span>Equipaje</button>
+        <button class="q"><span class="ic" style="background:#d5e7ff">🔔</span>Alertas</button>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head"><h2>Destinos que vuelan alto</h2><a href="#">Ver todos</a></div>
+      <div class="dests">
+        <article class="dest"><div class="art" style="background:#ffe7a3">🗼</div><div class="info"><b>París</b><span>12h 40m · </span><span class="price">USD 890</span></div></article>
+        <article class="dest"><div class="art" style="background:#c8f1e2">🏝️</div><div class="info"><b>Cancún</b><span>8h 10m · </span><span class="price">USD 540</span></div></article>
+        <article class="dest"><div class="art" style="background:#ffd4cd">🗻</div><div class="info"><b>Tokio</b><span>26h 05m · </span><span class="price">USD 1.320</span></div></article>
+        <article class="dest"><div class="art" style="background:#d5e7ff">🗽</div><div class="info"><b>Nueva York</b><span>10h 50m · </span><span class="price">USD 720</span></div></article>
+      </div>
+    </section>
+  </main>
+
+  <nav class="nav" aria-label="Navegación principal">
+    <button class="on" aria-current="page">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z"/></svg>Inicio
+    </button>
+    <button>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="M15 6v12" stroke-dasharray="2 2"/></svg>Viajes
+    </button>
+    <button aria-label="Buscar vuelo"><span class="fab">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="#1d2b4f"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg></span>
+    </button>
+    <button>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Mapa
+    </button>
+    <button>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Perfil
+    </button>
+  </nav>
+</div>
+
+<script>
+  // Intercambiar origen/destino
+  document.getElementById('swap').addEventListener('click', () => {
+    const f = document.getElementById('from'), t = document.getElementById('to');
+    const fn = document.getElementById('fromName'), tn = document.getElementById('toName');
+    [f.textContent, t.textContent] = [t.textContent, f.textContent];
+    [fn.textContent, tn.textContent] = [tn.textContent, fn.textContent];
+  });
+  // Tabs
+  document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.tabs button').forEach(x => { x.classList.remove('on'); x.setAttribute('aria-selected','false'); });
+    b.classList.add('on'); b.setAttribute('aria-selected','true');
+  }));
+</script>
+</body>
+</html>

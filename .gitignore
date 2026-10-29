@@ -1,0 +1,5 @@
+# skill-creator eval workspaces
+skills/*-workspace/
+
+.DS_Store
+__pycache__/
