@@ -3,3 +3,8 @@ skills/*-workspace/
 
 .DS_Store
 __pycache__/
+
+# skills CLI installs into this repo when run from it
+.agents/
+.claude/
+skills-lock.json
