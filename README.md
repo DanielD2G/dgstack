@@ -8,7 +8,7 @@ like Codex.
 
 | Skill | Say | What it does |
 |---|---|---|
-| `build-design` | "make me a login page" | Researches real references on Dribbble and similar sites, has subagents debate directions, and builds 3 to 5 HTML mockups you can compare side by side. |
+| `build-design` | "make a webpage for selling plane tickets, with cartoon planes" | Describe the page and the vibe however you like. It researches real references on Dribbble and similar sites, has subagents debate directions, and builds 3 to 5 HTML mockups you can compare side by side. |
 | `improve-ui` | "redesign this card in our style" | Redesigns one existing element of your product: extracts its identity from the code and the running app, then proposes 3 better structures that stay on brand. |
 | `quick-change` | "quick change", "remove that button" | Small front-end tweaks with a small diff, and a scope guard that stops and warns you when a "small" change would touch data, endpoints or shared components. |
 | `backtrack-for-test` | "backtrack for test" | Backfills tests for code that changed without them, deciding what deserves a test and writing it in the project's own setup. |
