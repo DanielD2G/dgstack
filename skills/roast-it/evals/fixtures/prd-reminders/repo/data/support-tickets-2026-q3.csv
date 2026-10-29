@@ -1,0 +1,216 @@
+id,created,category,subject
+T-4001,2026-07-02,bug,Dark mode text unreadable
+T-4002,2026-07-03,sync,Habits not syncing between phone and web
+T-4003,2026-07-04,feature,Want to export my data to CSV
+T-4004,2026-07-05,sync,Streak reset at midnight in wrong timezone
+T-4005,2026-07-06,billing,Charged twice for annual plan
+T-4006,2026-07-07,billing,Can't cancel subscription
+T-4007,2026-07-08,feature,Widget for home screen
+T-4008,2026-07-09,billing,Can't cancel subscription
+T-4009,2026-07-10,bug,Dark mode text unreadable
+T-4010,2026-07-11,account,Can't log in with Apple ID
+T-4011,2026-07-12,billing,Charged twice for annual plan
+T-4012,2026-07-13,feature,Widget for home screen
+T-4013,2026-07-14,sync,Lost my streak after update
+T-4014,2026-07-15,billing,Charged twice for annual plan
+T-4015,2026-07-16,billing,Can't cancel subscription
+T-4016,2026-07-17,feature,Want to export my data to CSV
+T-4017,2026-07-18,feature,Want to export my data to CSV
+T-4018,2026-07-19,billing,Can't cancel subscription
+T-4019,2026-07-20,sync,Lost my streak after update
+T-4020,2026-07-21,billing,Can't cancel subscription
+T-4021,2026-07-22,feature,Widget for home screen
+T-4022,2026-07-23,feature,Want to export my data to CSV
+T-4023,2026-07-24,billing,Charged twice for annual plan
+T-4024,2026-07-25,account,Can't log in with Apple ID
+T-4025,2026-07-26,billing,Can't cancel subscription
+T-4026,2026-07-27,sync,Lost my streak after update
+T-4027,2026-07-28,sync,Streak reset at midnight in wrong timezone
+T-4028,2026-07-01,sync,Streak reset at midnight in wrong timezone
+T-4029,2026-07-02,account,Can't log in with Apple ID
+T-4030,2026-07-03,billing,Charged twice for annual plan
+T-4031,2026-07-04,account,Can't log in with Apple ID
+T-4032,2026-07-05,account,Can't log in with Apple ID
+T-4033,2026-07-06,feature,Want to export my data to CSV
+T-4034,2026-07-07,billing,Charged twice for annual plan
+T-4035,2026-07-08,sync,Lost my streak after update
+T-4036,2026-07-09,billing,Charged twice for annual plan
+T-4037,2026-07-10,feature,Widget for home screen
+T-4038,2026-07-11,sync,Habits not syncing between phone and web
+T-4039,2026-07-12,bug,App crashes when editing a habit
+T-4040,2026-07-13,feature,Want to export my data to CSV
+T-4041,2026-07-14,sync,Habits not syncing between phone and web
+T-4042,2026-07-15,feature,Widget for home screen
+T-4043,2026-07-16,billing,Can't cancel subscription
+T-4044,2026-07-17,account,Can't log in with Apple ID
+T-4045,2026-07-18,bug,App crashes when editing a habit
+T-4046,2026-07-19,feature,Widget for home screen
+T-4047,2026-07-20,sync,Streak reset at midnight in wrong timezone
+T-4048,2026-07-21,sync,Habits not syncing between phone and web
+T-4049,2026-07-22,billing,Can't cancel subscription
+T-4050,2026-07-23,account,Can't log in with Apple ID
+T-4051,2026-07-24,account,Can't log in with Apple ID
+T-4052,2026-07-25,sync,Streak reset at midnight in wrong timezone
+T-4053,2026-07-26,sync,Lost my streak after update
+T-4054,2026-07-27,bug,Dark mode text unreadable
+T-4055,2026-07-28,billing,Can't cancel subscription
+T-4056,2026-07-01,feature,Widget for home screen
+T-4057,2026-07-02,billing,Can't cancel subscription
+T-4058,2026-07-03,account,Can't log in with Apple ID
+T-4059,2026-07-04,billing,Charged twice for annual plan
+T-4060,2026-07-05,account,Can't log in with Apple ID
+T-4061,2026-07-06,sync,Lost my streak after update
+T-4062,2026-07-07,feature,Please add habit categories
+T-4063,2026-07-08,sync,Streak reset at midnight in wrong timezone
+T-4064,2026-07-09,feature,Widget for home screen
+T-4065,2026-07-10,feature,Can I set two reminders for the same habit?
+T-4066,2026-07-11,feature,Want to export my data to CSV
+T-4067,2026-07-12,bug,Dark mode text unreadable
+T-4068,2026-07-13,feature,Please add habit categories
+T-4069,2026-07-14,account,Can't log in with Apple ID
+T-4070,2026-07-15,feature,Please add habit categories
+T-4071,2026-07-16,bug,Dark mode text unreadable
+T-4072,2026-08-17,bug,App crashes when editing a habit
+T-4073,2026-08-18,sync,Lost my streak after update
+T-4074,2026-08-19,sync,Habits not syncing between phone and web
+T-4075,2026-08-20,sync,Lost my streak after update
+T-4076,2026-08-21,billing,Can't cancel subscription
+T-4077,2026-08-22,account,Can't log in with Apple ID
+T-4078,2026-08-23,bug,App crashes when editing a habit
+T-4079,2026-08-24,feature,Widget for home screen
+T-4080,2026-08-25,feature,Please add habit categories
+T-4081,2026-08-26,bug,Dark mode text unreadable
+T-4082,2026-08-27,feature,Please add habit categories
+T-4083,2026-08-28,bug,App crashes when editing a habit
+T-4084,2026-08-01,account,Can't log in with Apple ID
+T-4085,2026-08-02,billing,Can't cancel subscription
+T-4086,2026-08-03,billing,Can't cancel subscription
+T-4087,2026-08-04,feature,Widget for home screen
+T-4088,2026-08-05,feature,Want to export my data to CSV
+T-4089,2026-08-06,bug,Reminder notification shows yesterday's habit
+T-4090,2026-08-07,sync,Habits not syncing between phone and web
+T-4091,2026-08-08,bug,Dark mode text unreadable
+T-4092,2026-08-09,sync,Habits not syncing between phone and web
+T-4093,2026-08-10,feature,Please add habit categories
+T-4094,2026-08-11,feature,Want to export my data to CSV
+T-4095,2026-08-12,billing,Charged twice for annual plan
+T-4096,2026-08-13,sync,Streak reset at midnight in wrong timezone
+T-4097,2026-08-14,billing,Can't cancel subscription
+T-4098,2026-08-15,feature,Widget for home screen
+T-4099,2026-08-16,account,Can't log in with Apple ID
+T-4100,2026-08-17,bug,Dark mode text unreadable
+T-4101,2026-08-18,bug,Dark mode text unreadable
+T-4102,2026-08-19,bug,Dark mode text unreadable
+T-4103,2026-08-20,account,Can't log in with Apple ID
+T-4104,2026-08-21,feature,Please add habit categories
+T-4105,2026-08-22,account,Can't log in with Apple ID
+T-4106,2026-08-23,feature,Please add habit categories
+T-4107,2026-08-24,billing,Can't cancel subscription
+T-4108,2026-08-25,billing,Can't cancel subscription
+T-4109,2026-08-26,bug,App crashes when editing a habit
+T-4110,2026-08-27,feature,Please add habit categories
+T-4111,2026-08-28,sync,Streak reset at midnight in wrong timezone
+T-4112,2026-08-01,billing,Can't cancel subscription
+T-4113,2026-08-02,billing,Charged twice for annual plan
+T-4114,2026-08-03,bug,App crashes when editing a habit
+T-4115,2026-08-04,sync,Streak reset at midnight in wrong timezone
+T-4116,2026-08-05,account,Can't log in with Apple ID
+T-4117,2026-08-06,sync,Streak reset at midnight in wrong timezone
+T-4118,2026-08-07,feature,Please add habit categories
+T-4119,2026-08-08,bug,App crashes when editing a habit
+T-4120,2026-08-09,feature,Want to export my data to CSV
+T-4121,2026-08-10,sync,Streak reset at midnight in wrong timezone
+T-4122,2026-08-11,bug,Dark mode text unreadable
+T-4123,2026-08-12,billing,Charged twice for annual plan
+T-4124,2026-08-13,feature,Please add habit categories
+T-4125,2026-08-14,bug,Dark mode text unreadable
+T-4126,2026-08-15,sync,Habits not syncing between phone and web
+T-4127,2026-08-16,account,Can't log in with Apple ID
+T-4128,2026-08-17,billing,Can't cancel subscription
+T-4129,2026-08-18,feature,Please add habit categories
+T-4130,2026-08-19,billing,Charged twice for annual plan
+T-4131,2026-08-20,sync,Lost my streak after update
+T-4132,2026-08-21,bug,App crashes when editing a habit
+T-4133,2026-08-22,sync,Habits not syncing between phone and web
+T-4134,2026-08-23,sync,Lost my streak after update
+T-4135,2026-08-24,feature,Want to export my data to CSV
+T-4136,2026-08-25,feature,Want to export my data to CSV
+T-4137,2026-08-26,feature,Please add habit categories
+T-4138,2026-08-27,billing,Can't cancel subscription
+T-4139,2026-08-28,sync,Habits not syncing between phone and web
+T-4140,2026-08-01,feature,Please add habit categories
+T-4141,2026-08-02,feature,Want to export my data to CSV
+T-4142,2026-08-03,feature,Widget for home screen
+T-4143,2026-08-04,bug,App crashes when editing a habit
+T-4144,2026-09-05,sync,Habits not syncing between phone and web
+T-4145,2026-09-06,feature,Want to export my data to CSV
+T-4146,2026-09-07,feature,Widget for home screen
+T-4147,2026-09-08,bug,App crashes when editing a habit
+T-4148,2026-09-09,feature,Want to export my data to CSV
+T-4149,2026-09-10,bug,Dark mode text unreadable
+T-4150,2026-09-11,sync,Streak reset at midnight in wrong timezone
+T-4151,2026-09-12,feature,Want to export my data to CSV
+T-4152,2026-09-13,sync,Lost my streak after update
+T-4153,2026-09-14,sync,Habits not syncing between phone and web
+T-4154,2026-09-15,billing,Can't cancel subscription
+T-4155,2026-09-16,sync,Habits not syncing between phone and web
+T-4156,2026-09-17,sync,Habits not syncing between phone and web
+T-4157,2026-09-18,sync,Lost my streak after update
+T-4158,2026-09-19,sync,Streak reset at midnight in wrong timezone
+T-4159,2026-09-20,sync,Lost my streak after update
+T-4160,2026-09-21,billing,Charged twice for annual plan
+T-4161,2026-09-22,feature,Please add habit categories
+T-4162,2026-09-23,account,Can't log in with Apple ID
+T-4163,2026-09-24,sync,Habits not syncing between phone and web
+T-4164,2026-09-25,bug,App crashes when editing a habit
+T-4165,2026-09-26,feature,Reminders arrive at the wrong time when I travel
+T-4166,2026-09-27,bug,App crashes when editing a habit
+T-4167,2026-09-28,billing,Charged twice for annual plan
+T-4168,2026-09-01,sync,Habits not syncing between phone and web
+T-4169,2026-09-02,feature,Want to export my data to CSV
+T-4170,2026-09-03,feature,Widget for home screen
+T-4171,2026-09-04,bug,Dark mode text unreadable
+T-4172,2026-09-05,account,Can't log in with Apple ID
+T-4173,2026-09-06,account,Can't log in with Apple ID
+T-4174,2026-09-07,bug,Dark mode text unreadable
+T-4175,2026-09-08,sync,Habits not syncing between phone and web
+T-4176,2026-09-09,feature,Widget for home screen
+T-4177,2026-09-10,account,Can't log in with Apple ID
+T-4178,2026-09-11,sync,Streak reset at midnight in wrong timezone
+T-4179,2026-09-12,sync,Streak reset at midnight in wrong timezone
+T-4180,2026-09-13,billing,Charged twice for annual plan
+T-4181,2026-09-14,feature,Please add habit categories
+T-4182,2026-09-15,sync,Streak reset at midnight in wrong timezone
+T-4183,2026-09-16,feature,Widget for home screen
+T-4184,2026-09-17,feature,Want to export my data to CSV
+T-4185,2026-09-18,feature,Want to export my data to CSV
+T-4186,2026-09-19,feature,Want to export my data to CSV
+T-4187,2026-09-20,feature,Want to export my data to CSV
+T-4188,2026-09-21,billing,Can't cancel subscription
+T-4189,2026-09-22,feature,Please add habit categories
+T-4190,2026-09-23,sync,Streak reset at midnight in wrong timezone
+T-4191,2026-09-24,feature,Want to export my data to CSV
+T-4192,2026-09-25,billing,Charged twice for annual plan
+T-4193,2026-09-26,sync,Lost my streak after update
+T-4194,2026-09-27,billing,Can't cancel subscription
+T-4195,2026-09-28,sync,Lost my streak after update
+T-4196,2026-09-01,feature,Please add habit categories
+T-4197,2026-09-02,sync,Habits not syncing between phone and web
+T-4198,2026-09-03,billing,Can't cancel subscription
+T-4199,2026-09-04,bug,Dark mode text unreadable
+T-4200,2026-09-05,account,Can't log in with Apple ID
+T-4201,2026-09-06,billing,Charged twice for annual plan
+T-4202,2026-09-07,billing,Can't cancel subscription
+T-4203,2026-09-08,billing,Charged twice for annual plan
+T-4204,2026-09-09,account,Can't log in with Apple ID
+T-4205,2026-09-10,sync,Habits not syncing between phone and web
+T-4206,2026-09-11,feature,Widget for home screen
+T-4207,2026-09-12,billing,Can't cancel subscription
+T-4208,2026-09-13,bug,Dark mode text unreadable
+T-4209,2026-09-14,account,Can't log in with Apple ID
+T-4210,2026-09-15,billing,Charged twice for annual plan
+T-4211,2026-09-16,billing,Can't cancel subscription
+T-4212,2026-09-17,sync,Lost my streak after update
+T-4213,2026-09-18,account,Can't log in with Apple ID
+T-4214,2026-09-19,feature,Want to export my data to CSV
+T-4215,2026-10-20,sync,Habits not syncing between phone and web

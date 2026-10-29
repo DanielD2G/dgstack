@@ -1,0 +1,14 @@
+{
+  "name": "tally-api",
+  "version": "3.4.0",
+  "main": "src/server.js",
+  "scripts": { "start": "node src/server.js", "test": "node --test" },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.650.0",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.3",
+    "pg": "^8.12.0",
+    "socket.io": "^4.7.5"
+  }
+}

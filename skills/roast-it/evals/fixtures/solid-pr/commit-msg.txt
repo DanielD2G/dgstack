@@ -1,0 +1,20 @@
+Add (customer_id, created_at) index to orders
+
+The order history page (GET /customers/:id/orders) has p95 of 1.8 s in prod.
+EXPLAIN ANALYZE on a large customer shows a Seq Scan over orders (41 M rows)
+plus a sort:
+
+  Limit  (actual time=1712.4..1712.5 rows=50)
+    ->  Sort  (Sort Key: created_at DESC)
+          ->  Seq Scan on orders  (Filter: customer_id = 88231, Rows Removed by Filter: 41022817)
+
+With the index on a staging copy of prod:
+
+  Limit  (actual time=0.061..0.112 rows=50)
+    ->  Index Scan using orders_customer_id_created_at_idx on orders
+
+- CONCURRENTLY so writes are not blocked while it builds; the migration
+  disables knex's transaction because CONCURRENTLY can't run inside one.
+- Built in 6 min on the staging copy, no write errors during the build.
+- Tests check the migration runs outside a transaction and that the index
+  matches the query.

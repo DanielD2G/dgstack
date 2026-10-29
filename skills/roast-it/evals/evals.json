@@ -1,0 +1,237 @@
+{
+  "skill_name": "roast-it",
+  "setup": "sh evals/setup.sh <fixture> <run-dir> builds <run-dir>/repo, the agent's working directory.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "lambda-migration",
+      "fixture": "lambda-migration",
+      "prompt": "Queremos llevar el backend a lambdas, el plan está en docs/lambda-migration.md. ¿Tiene sentido en serio? Roastealo.",
+      "expected_output": "Verdict: no as written. Killers: the month-end export runs up to 22 min (ops/metrics) vs Lambda's 15 min max; the cost math uses 10 M req/month when real traffic is ~106 M, so Lambda costs ~$390/month vs $180 today. Also: 'stateless' is false (in-memory sessions with sticky ALB, socket.io WebSockets, export writes ~3 GB to local disk), uploads up to 48 MB exceed the synchronous payload limit, a 20-connection pool per function instance can exhaust RDS max_connections 200. Offers the boring alternative (stay on EC2/containers, maybe move only the export to a container task).",
+      "assertions": [
+        {
+          "id": "verdict-up-front",
+          "type": "judge",
+          "text": "The first line after any title states a blunt verdict"
+        },
+        {
+          "id": "no-emojis",
+          "type": "script",
+          "text": "Contains no emojis"
+        },
+        {
+          "id": "cites-official-docs",
+          "type": "script",
+          "text": "Links an official AWS docs page for at least one Lambda or API Gateway limit"
+        },
+        {
+          "id": "export-timeout",
+          "type": "judge",
+          "text": "Flags that the month-end export (19-22 min in ops/metrics) exceeds Lambda's 15-minute maximum"
+        },
+        {
+          "id": "cost-math-wrong",
+          "type": "judge",
+          "text": "Shows the plan's 10 M requests/month is ~10x below the real ~106 M and recomputes Lambda cost above today's $180"
+        },
+        {
+          "id": "not-stateless",
+          "type": "judge",
+          "text": "Refutes 'stateless' with concrete code: in-memory sessions (src/cache.js), socket.io WebSockets, or the export's local-disk writes"
+        },
+        {
+          "id": "upload-payload",
+          "type": "judge",
+          "text": "Flags uploads up to 48-50 MB against the synchronous invocation / API Gateway payload limit"
+        },
+        {
+          "id": "db-connections",
+          "type": "judge",
+          "text": "Handles DB connections with evidence: either flags the per-instance pool / burst risk against RDS max_connections 200, or shows with numbers that it holds"
+        },
+        {
+          "id": "alternative",
+          "type": "judge",
+          "text": "Offers a concrete smaller or do-nothing alternative"
+        },
+        {
+          "id": "no-invented",
+          "type": "judge",
+          "text": "Every killer/serious objection is backed by a file, a number from the fixture, or a doc; nothing contradicts the fixture"
+        },
+        {
+          "id": "current-system-bugs",
+          "type": "judge",
+          "text": "Flags that node-cron runs on both instances, so the export runs twice (changing the 19-22 min the plan relies on)"
+        },
+        {
+          "id": "tight",
+          "type": "script",
+          "text": "Tight: the answer is under 1,200 words"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "prd-reminders",
+      "fixture": "prd-reminders",
+      "prompt": "Destrozame este PRD antes de que lo presente el lunes: docs/prd-smart-reminders.md. En data/ tenés lo que exportamos de analytics y soporte.",
+      "expected_output": "Verdict: not as written. Killers: SMS fallback for ~54k users without push is ~1.6 M SMS/month, ~$17k, near 40% of the $45k revenue ('SMS costs are small' is false); 'most requested' is false (3 of 215 Q3 tickets mention reminders); push on iOS/Android contradicts the non-goal 'no changes to the mobile apps'; ML model + SMS + dashboard + push in 4 weeks with 2 backend engineers. Serious: retention goal has no stated baseline (it is 18%) and the success metric (open rate) does not measure retention; the 21% vs 17% is correlation. Alternative: a cheap push send-time experiment on the existing reminder.",
+      "assertions": [
+        {
+          "id": "verdict-up-front",
+          "type": "judge",
+          "text": "The first line after any title states a blunt verdict"
+        },
+        {
+          "id": "no-emojis",
+          "type": "script",
+          "text": "Contains no emojis"
+        },
+        {
+          "id": "sms-cost",
+          "type": "judge",
+          "text": "Computes the SMS fallback cost (~50k+ users without push, daily, ~$15-20k/month) against the $45k revenue and refutes 'SMS costs are small'"
+        },
+        {
+          "id": "demand-claim",
+          "type": "judge",
+          "text": "Refutes 'most requested' with the ticket data (3 of ~215 Q3 tickets mention reminders)"
+        },
+        {
+          "id": "nongoal-contradiction",
+          "type": "judge",
+          "text": "Points out that push on iOS/Android contradicts the non-goal 'no changes to the iOS and Android apps'"
+        },
+        {
+          "id": "scope-vs-timeline",
+          "type": "judge",
+          "text": "Attacks the 4-week, 2-backend-engineer timeline against the scope (ML model, SMS, dashboard, push)"
+        },
+        {
+          "id": "metric-mismatch",
+          "type": "judge",
+          "text": "Says the success metric (open rate) does not measure the retention goal, and/or that the goal has no baseline (it is ~18%)"
+        },
+        {
+          "id": "alternative",
+          "type": "judge",
+          "text": "Offers a cheaper experiment or smaller version first"
+        },
+        {
+          "id": "no-invented",
+          "type": "judge",
+          "text": "Every killer/serious objection is backed by the PRD or data/; nothing contradicts the fixture"
+        },
+        {
+          "id": "fix-path",
+          "type": "judge",
+          "text": "Gives a short, ordered path of concrete changes that would make the PRD presentable on Monday"
+        },
+        {
+          "id": "tight",
+          "type": "script",
+          "text": "Tight: the answer is under 1,200 words"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "solid-pr",
+      "fixture": "solid-pr",
+      "prompt": "Roastealo: el PR es la rama feature/orders-customer-index contra main (la descripción está en el mensaje del commit). Lo quiero mergear hoy.",
+      "expected_output": "The PR holds up: composite index matches the query, CONCURRENTLY with knex transaction disabled is correct, evidence from EXPLAIN on staging. Says so plainly with no invented killer. Real weak spots: if CONCURRENTLY fails it leaves an INVALID index and IF NOT EXISTS makes a rerun silently skip it; tests only check the SQL string, not the planner; build time/IO on 41 M rows in prod.",
+      "assertions": [
+        {
+          "id": "verdict-up-front",
+          "type": "judge",
+          "text": "The first line after any title states a blunt verdict"
+        },
+        {
+          "id": "no-emojis",
+          "type": "script",
+          "text": "Contains no emojis"
+        },
+        {
+          "id": "no-false-killer",
+          "type": "judge",
+          "text": "Does not claim a merge-blocking defect that isn't real; the verdict says it can be merged (possibly with caveats)"
+        },
+        {
+          "id": "concurrently-correct",
+          "type": "judge",
+          "text": "Does not claim CONCURRENTLY will fail inside a transaction (the migration disables it); recognizes the composite index matches the query"
+        },
+        {
+          "id": "invalid-index",
+          "type": "judge",
+          "text": "Mentions that a failed CONCURRENTLY build leaves an INVALID index that IF NOT EXISTS would then silently skip on rerun"
+        },
+        {
+          "id": "weak-spots-real",
+          "type": "judge",
+          "text": "Weak spots named are specific and true for this diff (e.g., tests only check SQL strings, prod build time on 41 M rows, no unique/other issue invented)"
+        },
+        {
+          "id": "tight",
+          "type": "script",
+          "text": "Tight: the answer is under 1,200 words"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "microservices-neutral",
+      "fixture": "microservices",
+      "prompt": "Te paso la propuesta de arquitectura que armó el equipo: docs/microservices-proposal.md. ¿Qué te parece? La idea es arrancar el mes que viene.",
+      "expected_output": "Even with a neutral prompt: a blunt no. The 38-min deploy is 31 min of serial tests and 4 min of uncached Docker build, not monolith size; 'each team deploys' with one team of 3 engineers; no scaling need (3.4 req/s peak, 12% CPU); reports is slow because of an N+1 (~18,000 queries per request) and a non-sargable date filter in src/reports.js; checkout's single DB transaction across inventory, orders and payments (src/checkout.js) would need sagas once split. Alternative: parallelize tests and cache Docker layers, fix the report query, maybe a modular monolith.",
+      "assertions": [
+        {
+          "id": "verdict-up-front",
+          "type": "judge",
+          "text": "The first line after any title states a blunt verdict"
+        },
+        {
+          "id": "no-praise-opening",
+          "type": "judge",
+          "text": "Does not open by praising the proposal or the team; leads with what's wrong"
+        },
+        {
+          "id": "deploy-root-cause",
+          "type": "judge",
+          "text": "Shows the 38-min deploy is mostly the serial test suite (31 min) and the uncached Docker build, not the monolith's size"
+        },
+        {
+          "id": "one-team",
+          "type": "judge",
+          "text": "Points out there is one team of 3 engineers, so 'each team deploys independently' has no teams to serve"
+        },
+        {
+          "id": "scale-premise",
+          "type": "judge",
+          "text": "Refutes the scaling premise: 3.4 req/s peak, 12% CPU, and the slow report is an N+1 (~18,000 queries per request) in src/reports.js"
+        },
+        {
+          "id": "transaction",
+          "type": "judge",
+          "text": "Flags that checkout reserves stock, creates the order and records the payment in one DB transaction (src/checkout.js), which splitting into inventory/orders/payments breaks"
+        },
+        {
+          "id": "alternative",
+          "type": "judge",
+          "text": "Offers the cheap alternative: parallelize tests / cache Docker layers, fix the report query, or a modular monolith"
+        },
+        {
+          "id": "no-invented",
+          "type": "judge",
+          "text": "Every killer/serious objection is backed by the fixture; nothing contradicts it"
+        },
+        {
+          "id": "tight",
+          "type": "script",
+          "text": "Tight: the answer is under 1,200 words"
+        }
+      ]
+    }
+  ]
+}
