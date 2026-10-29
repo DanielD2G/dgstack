@@ -14,6 +14,7 @@ like Codex.
 | `backtrack-for-test` | "backtrack for test" | Backfills tests for code that changed without them, deciding what deserves a test and writing it in the project's own setup. |
 | `subagent-for-test` | "subagent for test" | Runs `backtrack-for-test` in a background agent that follows your changes on the same branch, while you keep working. |
 | `debug-it-quick` | "debug it quick", "why is this failing?" | Maps every system that could be involved (containers, cloud, database, DNS, CI, your machine), fans out cheap parallel scouts, and digs in only where they find something. |
+| `read-it-quick` | "read it quick", "¿de qué trata esto?" | Reads a doc, a PDF, a book or a web page for you and returns only the main idea plus a menu of concepts to dig into, then explains the ones you pick. |
 
 Some skills call others. Install the ones they need too:
 
@@ -44,8 +45,9 @@ To install a single skill, copy only its folder, for example
 
 - `python3` for `improve-ui`'s brand check and for serving mockups locally.
 - A harness with subagents for `subagent-for-test`. `build-design`,
-  `improve-ui` and `debug-it-quick` use them too, and fall back to doing the
-  work in a single agent, slower, when there are none.
+  `improve-ui`, `debug-it-quick` and `read-it-quick` (for books and other long
+  sources) use them too, and fall back to doing the work in a single agent,
+  slower, when there are none.
 - A browser the agent can drive to preview mockups and screenshot your app. In
   the Claude desktop app that is the built-in browser pane.
 - `debug-it-quick` uses whatever CLIs your systems need (`docker`, `kubectl`,
