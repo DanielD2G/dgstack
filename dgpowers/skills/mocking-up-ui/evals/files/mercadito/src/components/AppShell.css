@@ -1,0 +1,28 @@
+.shell__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--mk-space-4) var(--mk-space-8);
+  background: var(--mk-surface);
+  border-bottom: var(--mk-border);
+}
+.shell__logo {
+  font-family: var(--mk-font-display);
+  font-size: var(--mk-text-xl);
+  font-weight: 700;
+  color: var(--mk-primary);
+}
+.shell__nav { display: flex; gap: var(--mk-space-2); }
+.shell__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mk-space-2);
+  padding: var(--mk-space-2) var(--mk-space-3);
+  border-radius: 999px;
+  color: var(--mk-ink-muted);
+  text-decoration: none;
+  font-size: var(--mk-text-sm);
+  font-weight: 500;
+}
+.shell__link.active { background: var(--mk-primary-soft); color: var(--mk-primary-strong); }
+.shell__main { max-width: 1120px; margin: 0 auto; padding: var(--mk-space-8); }

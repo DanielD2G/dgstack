@@ -1,0 +1,72 @@
+{
+  "skill_name": "mocking-up-ui",
+  "evals": [
+    {
+      "id": 1,
+      "name": "checkout-new-fields",
+      "prompt": "En el checkout de Mercadito quiero agregar un campo \"Notas para el repartidor\" (opcional, máximo 200 caracteres) y un switch \"Dejar en portería si no estoy\". Antes de programarlo dibujame cómo quedaría, que no quiero que el agente lo invente. El repo es evals/files/mercadito (React, sin servidor corriendo).",
+      "expected_output": "A UI map of the touched pieces (the Dirección de entrega card in CheckoutPage, possibly the order summary), an option-0-current rebuild of the address card in context, 2-3 placement options that draw the whole card with the new field and switch in it, in empty, filled and over-the-limit error states, using only Mercadito's tokens, fonts (Fraunces, DM Sans) and lucide icons, no emojis, plus identity.md, tokens.json, decision.md and an index.html per piece.",
+      "files": [
+        "evals/files/mercadito"
+      ],
+      "assertions": [
+        "Writes down the touched components in a UI map naming their source files",
+        "Mockups use only Mercadito's colors and fonts (brand check against the real palette)",
+        "No emojis in any mockup",
+        "Every new mockup uses the product fonts Fraunces and DM Sans",
+        "Lists the implied screens or states it found and asks whether to draw them",
+        "Includes a baseline rebuild of the current address card",
+        "Draws at least 2 options for where the new field and switch go",
+        "Each option draws the whole Dirección de entrega card (existing fields kept) with the new field and switch",
+        "Shows the 200-character limit and an over-the-limit error state"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "wizard-from-design-doc",
+      "prompt": "The add-card design is approved: evals/files/mercadito/docs/dgpowers/specs/2026-11-13-add-card-wizard-design.md. Go ahead and mock up the UI so we can plan it.",
+      "expected_output": "Mockups in docs/dgpowers/mockups/2026-11-13-<topic>/: options for the step that sets the wizard's look, then every wizard step (Tarjeta, Dirección de facturación, Confirmar) plus the trigger button and the success state drawn in the chosen direction, each with the states the UI map lists; the copy-only row 6 is left as a skip; the design doc's UI map has the chosen paths instead of 'draw'; a coverage check is reported.",
+      "files": [
+        "evals/files/mercadito"
+      ],
+      "assertions": [
+        "Writes down the touched components in a UI map naming their source files",
+        "Mockups use only Mercadito's colors and fonts (brand check against the real palette)",
+        "No emojis in any mockup",
+        "Every new mockup uses the product fonts Fraunces and DM Sans",
+        "Lists the implied screens or states it found and asks whether to draw them",
+        "Draws each wizard step (Tarjeta, Dirección de facturación, Confirmar) and the success state",
+        "Each step has its own mockup file (at least 4 non-baseline files)",
+        "Shows the listed states: validation error, verifying/loading, provider rejection, locked address, save error",
+        "Shows the disabled trigger at 5 cards with its tooltip",
+        "Design doc UI map updated: no row left as 'draw', chosen paths exist",
+        "Copy-only row 6 stays a skip",
+        "Mockups saved under docs/dgpowers/mockups/2026-11-13-<topic>/",
+        "Asks about the close-with-data confirmation the doc implies but the map lacks",
+        "Researches the new wizard with real references (research.md, 4+ URLs)"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "invoice-filter-with-copy-change",
+      "prompt": "On the Medios de pago page of Mercadito (evals/files/mercadito) we want to filter the Facturas table by status (Todas / Pagadas / Pendientes), and rename the \"Pendiente\" badge to \"A pagar\". Can you mock it up before we build it? If the filter leaves the table empty it should say so.",
+      "expected_output": "A UI map with the filter row marked draw and the badge rename marked skip (copy only), the whole Facturas card drawn with the filter in 2-3 placement options next to an option-0-current baseline, an empty state for a filter with no results, Mercadito's identity respected, no emojis.",
+      "files": [
+        "evals/files/mercadito"
+      ],
+      "assertions": [
+        "Writes down the touched components in a UI map naming their source files",
+        "Mockups use only Mercadito's colors and fonts (brand check against the real palette)",
+        "No emojis in any mockup",
+        "Every new mockup uses the product fonts Fraunces and DM Sans",
+        "Lists the implied screens or states it found and asks whether to draw them",
+        "Includes a baseline rebuild of the current Facturas card",
+        "Draws at least 2 options for the status filter",
+        "Each option offers Todas / Pagadas / Pendientes and keeps the invoices table",
+        "Shows an empty state for a filter with no results",
+        "Researches the new filter pattern with real references (research.md, 4+ URLs)",
+        "Treats the badge rename as a copy-only skip, not as a piece with options"
+      ]
+    }
+  ]
+}
