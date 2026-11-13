@@ -24,9 +24,9 @@ If the "product" is a single HTML file or a mockup (no repo structure), the iden
 
 ## 2. Live app
 
-1. **Is it running?** Check `.claude/launch.json`, `package.json` scripts (`dev`, `start`, `serve`) for the expected port, then `lsof -nP -iTCP -sTCP:LISTEN | grep -E 'node|vite|next|python|ruby|php|bun|deno'`. Try the URL in the browser.
+1. **Is it running?** Check `.claude/launch.json`, `package.json` scripts (`dev`, `start`, `serve`) for the expected port, then `lsof -nP -iTCP -sTCP:LISTEN | grep -E 'node|vite|next|python|ruby|php|bun|deno'`. Try the URL in the browser (`browsers.md` says which one).
 2. **Running:** open the route that contains the element. Screenshot the element, then the full screen, then 2–3 other representative screens. If tokens are ambiguous, read real values with the browser's JS tool, e.g. `getComputedStyle(document.querySelector('<selector>'))`, or collect the CSS variables on `:root`.
-3. **Not running:** ask the user before starting anything. Use AskUserQuestion with the exact command (e.g. `npm run dev` on port 3000) and say why you want to see it. Starting a server may need env vars or secrets (if the repo has a `.env.lock`, the `lock` skill covers running with them), install dependencies or touch databases, so it's their call. If they say yes, start it with the preview/launch tooling or a background shell, and stop it when you're done unless they want it kept. If they say no, work from code plus any screenshots they provided.
+3. **Not running:** ask the user before starting anything. Ask with your harness's question tool if it has one (AskUserQuestion in Claude Code), or in a plain message, with the exact command (e.g. `npm run dev` on port 3000) and say why you want to see it. Starting a server may need env vars or secrets (if the repo has a `.env.lock`, the `lock` skill covers running with them), install dependencies or touch databases, so it's their call. If they say yes, start it with the preview/launch tooling or a background shell, and stop it when you're done unless they want it kept. If they say no, work from code plus any screenshots they provided.
 4. Don't log in with real credentials or change data in the app. If the element sits behind auth and you can't reach it, ask the user for a screenshot.
 
 ## 3. Write `identity.md`

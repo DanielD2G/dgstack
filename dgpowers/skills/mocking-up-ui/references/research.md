@@ -24,11 +24,9 @@ control", "status filter table"), plus the product's domain.
 
 ## 2. Look at real references
 
-Use the built-in browser when the environment has one (in the Claude
-desktop app, the browser pane: `mcp__Claude_Browser__*`); Claude in
-Chrome only if the user asks for it or there is no built-in browser.
-Never open the user's own browser. Structure is visual: take screenshots
-and look at them; page text is not enough.
+Pick the browser by the order in `browsers.md` (T3 Code's, then
+Claude's built-in one, then Codex's in-app one). Structure is visual:
+take screenshots and look at them; page text is not enough.
 
 Sources, in order of usefulness for this job (URLs and how to navigate
 each are in `inspiration-sources.md`):

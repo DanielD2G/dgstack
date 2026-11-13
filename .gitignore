@@ -1,6 +1,6 @@
 # skill-creator eval workspaces
 skills/*-workspace/
-dgpowers/skills/*-workspace/
+dgpowers-workspaces/
 
 .DS_Store
 __pycache__/

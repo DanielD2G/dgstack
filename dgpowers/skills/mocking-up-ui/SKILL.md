@@ -26,6 +26,11 @@ that covers the states that row lists, or an explicit skip.
 
 Tell the user in one line when each phase starts.
 
+**Browser:** research and the visual check need one. Read
+`references/browsers.md` before the first page you open: it sets the
+order (T3 Code's browser, then Claude's built-in browser, then Codex's
+in-app browser), the rules for all of them, and what to do with none.
+
 ## 1. Start from the UI map
 
 Read `references/ui-map.md`: it defines the map, what gets drawn and
@@ -94,7 +99,7 @@ need enough to draw pieces that look native, not a brand audit:
   Look for how the product already solves similar things (other forms,
   other wizards, other empty states).
 - **Live app:** if a dev server is already running, open the relevant
-  screens in the built-in browser and screenshot them. If none is
+  screens in the browser (see below) and screenshot them. If none is
   running, don't start one without asking (see the reference); the code
   is usually enough for this skill.
 
@@ -191,11 +196,8 @@ when there is one. Set `<html lang>` to the user's language.
    every hit, except proposed tokens recorded in `decision.md`. Option 0
    is left out on purpose: it mirrors the product as it is.
 2. **Visual check:** serve the run folder (`python3 -m http.server`) and
-   open each file in the built-in browser when the environment has one
-   (in the Claude desktop app, the browser pane: `mcp__Claude_Browser__*`).
-   Use Claude in Chrome only if the user asks for it or there is no
-   built-in browser, and never open the user's own browser (`open`,
-   `xdg-open`, `webbrowser.open`). Check at the product's primary
+   open each file in the browser `references/browsers.md` picks. With no
+   browser, skip this check and say so. Check at the product's primary
    viewport, with animations finished. Next to option 0: does it look
    like the same product? Is the difference between options visible at a
    glance? Does every listed state render?
@@ -209,7 +211,7 @@ Fix before showing. Say what you couldn't verify.
 ## 9. Let the user choose
 
 Show one piece at a time, or the pieces of one flow together: the
-`index.html` path (loaded in the browser pane when possible), each
+`index.html` path (loaded in that browser when there is one), each
 option in one line with the references behind it, and your
 recommendation with its reason. Add any copy you'd change, as a
 question. Ask which one they want. They can mix ("the grouping from 2
