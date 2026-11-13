@@ -1,0 +1,28 @@
+{
+  "skill_name": "subagent-driven-development",
+  "evals": [
+    {
+      "id": 1,
+      "name": "parallel-export-plan",
+      "prompt": "Execute the plan at docs/dgpowers/plans/2026-11-13-export-formats.md with subagent-driven-development (repo: evals/files/tally plus evals/files/export-formats-plan.md copied to that path).",
+      "expected_output": "All five tasks implemented and reviewed, 23 tests green on the feature branch; with the new skill, tasks 2, 3 and 4 run at the same time in their own worktrees and are merged back, with no worktrees or task branches left behind.",
+      "files": [
+        "evals/files/tally",
+        "evals/files/export-formats-plan.md"
+      ],
+      "assertions": [
+        "Work is on feature/export-formats",
+        "Whole suite is green on the branch, with the plan's 23 tests or more",
+        "All five tasks' files exist on the branch",
+        "The export command works end to end",
+        "main is untouched (nothing merged or pushed)",
+        "Ledger records all five tasks as complete",
+        "Every task got a task review, and a final whole-branch review ran",
+        "Stops at the integration question instead of merging",
+        "Tasks 2, 3 and 4 ran in their own worktrees and were merged back",
+        "No task worktrees or task branches left behind",
+        "The three exporters were built at the same time (first commits within 30 seconds of each other)"
+      ]
+    }
+  ]
+}

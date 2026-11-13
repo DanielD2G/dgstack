@@ -1,0 +1,45 @@
+{
+  "skill_name": "writing-plans",
+  "evals": [
+    {
+      "id": 1,
+      "name": "wide-export-formats",
+      "prompt": "The export design is approved: docs/dgpowers/specs/2026-11-13-export-formats-design.md (repo: evals/files/tally). Write the implementation plan.",
+      "expected_output": "A plan whose graph has an early registry task, the three exporters in one parallel wave with disjoint files, and the CLI task after them; every task has a Depends on line; the wave table matches.",
+      "files": [
+        "../subagent-driven-development/evals/files/tally"
+      ],
+      "assertions": [
+        "Writes a plan under docs/dgpowers/plans/",
+        "Plan header has a Task Graph wave table",
+        "Every task has a Depends on line",
+        "No task depends on a later or missing task",
+        "Tasks with no dependency path between them touch disjoint files",
+        "Wave table agrees with the Depends on lines (every dependency sits in an earlier wave)",
+        "Finds the width: at least 3 tasks can run at the same time",
+        "The three exporters are separate tasks with no dependency between them",
+        "The CLI task comes after the registry and all three exporters"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "chain-categories",
+      "prompt": "The categories design is approved: docs/dgpowers/specs/2026-11-13-categories-design.md (repo: evals/files/tally). Write the implementation plan.",
+      "expected_output": "A plan that is mostly a chain (model, then store, then CLI): tasks that touch the same file are linked by a dependency, and no parallelism is invented between tasks that share models.py, store.py or cli.py.",
+      "files": [
+        "../subagent-driven-development/evals/files/tally"
+      ],
+      "assertions": [
+        "Writes a plan under docs/dgpowers/plans/",
+        "Plan header has a Task Graph wave table",
+        "Every task has a Depends on line",
+        "No task depends on a later or missing task",
+        "Tasks with no dependency path between them touch disjoint files",
+        "Wave table agrees with the Depends on lines (every dependency sits in an earlier wave)",
+        "Store and CLI tasks depend on the model task (the chain is kept)",
+        "Tasks that touch tally/cli.py are ordered by dependencies",
+        "Tasks that touch tally/store.py are ordered by dependencies"
+      ]
+    }
+  ]
+}

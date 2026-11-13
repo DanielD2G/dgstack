@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# SessionStart hook for the dgpowers plugin: puts the using-dgpowers skill
+# in the agent's context at startup, after /clear and after compaction, so
+# the agent knows which skill each kind of work starts with before its
+# first reply. Without it, skills trigger only on their descriptions.
+#
+# Uses bash builtins only ($(<file), parameter substitution, printf):
+# a SessionStart hook can run with an empty or broken PATH.
+set -euo pipefail
+
+case "$0" in
+  */*) script_dir="$(cd "${0%/*}" && pwd)" ;;
+  *) script_dir="$(pwd)" ;;
+esac
+plugin_root="${CLAUDE_PLUGIN_ROOT:-$(cd "$script_dir/.." && pwd)}"
+
+skill="$plugin_root/skills/using-dgpowers/SKILL.md"
+if [ -r "$skill" ]; then
+  content="$(<"$skill")"
+  # Drop the YAML frontmatter: the agent needs the body, not the metadata.
+  if [ "${content:0:3}" = "---" ]; then
+    rest="${content#---*$'\n'---}"
+    content="${rest#$'\n'}"
+  fi
+else
+  content="(dgpowers: could not read skills/using-dgpowers/SKILL.md)"
+fi
+
+json_escape() {
+  local s="$1"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  s="${s//$'\n'/\\n}"
+  s="${s//$'\r'/\\r}"
+  s="${s//$'\t'/\\t}"
+  printf '%s' "$s"
+}
+
+context="You have dgpowers. This is your 'dgpowers:using-dgpowers' skill; invoke the other dgpowers skills with your skill tool.\n\n$(json_escape "$content")"
+
+printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"%s"}}\n' "$context"

@@ -1,0 +1,21 @@
+{
+  "name": "dgpowers",
+  "description": "Brainstorm, map and mock up the UI before planning, plan as a task graph, and build in parallel with a review per task. Adapted from superpowers.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Daniel Gonzalez"
+  },
+  "homepage": "https://github.com/DanielD2G/dgstack/tree/main/dgpowers",
+  "repository": "https://github.com/DanielD2G/dgstack",
+  "license": "MIT",
+  "keywords": [
+    "brainstorming",
+    "mockups",
+    "planning",
+    "task-graph",
+    "subagent-driven-development",
+    "tdd",
+    "code-review",
+    "debugging"
+  ]
+}

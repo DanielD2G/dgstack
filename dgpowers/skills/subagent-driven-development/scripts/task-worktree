@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+# Give one task of a plan its own git worktree and branch, so several
+# implementers can work at the same time without seeing each other's
+# half-written files, then merge the task back and clean up.
+#
+# Parallel implementers in one working tree fail in ways that look like
+# real bugs: a test run picks up a neighbor's unfinished file, two commits
+# race for the index lock, and a task's review range swallows another
+# task's commits. One worktree per running task removes all three.
+#
+# The worktree lives inside the plan's workspace
+# (<repo-root>/.dgpowers/sdd/<plan>/worktrees/task-<ID>), which is
+# git-ignored, on branch sdd/<plan>/task-<ID>, cut from the current HEAD of
+# the working tree you run this from (the plan's branch).
+#
+# Usage:
+#   task-worktree [-C DIR] add    PLAN_FILE TASK_ID   create; prints path=, branch=, base=
+#   task-worktree [-C DIR] merge  PLAN_FILE TASK_ID   merge the task branch into the current branch
+#   task-worktree [-C DIR] remove PLAN_FILE TASK_ID   delete the worktree and its merged branch
+#   task-worktree [-C DIR] list   PLAN_FILE           worktrees this plan still has
+#
+# merge exits 3 and leaves the tree untouched (merge aborted) when the
+# branches conflict: a conflict means the plan's graph was wrong about
+# these tasks being independent, and that is a ruling for the controller,
+# not something to resolve by guesswork here.
+# -C DIR runs as if started in DIR, as in sdd-workspace.
+set -euo pipefail
+
+here=$(cd "$(dirname "$0")" && pwd)
+if [ "${1:-}" = "-C" ]; then
+  [ -d "${2:-}" ] || { echo "bad -C directory: ${2:-}" >&2; exit 2; }
+  cd "$2"
+  shift 2
+fi
+
+usage() {
+  echo "usage: task-worktree [-C DIR] add|merge|remove PLAN_FILE TASK_ID | list PLAN_FILE" >&2
+  exit 2
+}
+
+cmd=${1:-}
+plan=${2:-}
+[ -n "$cmd" ] && [ -n "$plan" ] || usage
+[ -f "$plan" ] || { echo "no such plan file: $plan" >&2; exit 2; }
+
+# Invoke via bash rather than direct exec: some extractors strip exec bits.
+repo=$("${BASH:-bash}" "$here/sdd-repo" --with-commit)
+workspace=$("${BASH:-bash}" "$here/sdd-workspace" "$plan")
+slug=$(basename "$workspace")
+trees="$workspace/worktrees"
+
+if [ "$cmd" = "list" ]; then
+  [ $# -eq 2 ] || usage
+  [ -d "$trees" ] || exit 0
+  for d in "$trees"/task-*; do
+    [ -d "$d" ] || continue
+    printf '%s\t%s\n' "$(basename "$d")" "$(git -C "$d" rev-parse --abbrev-ref HEAD 2>/dev/null || echo '?')"
+  done
+  exit 0
+fi
+
+[ $# -eq 3 ] || usage
+id=$3
+case "$id" in
+  ''|*[!A-Za-z0-9.]*) echo "bad TASK_ID (letters, digits and dots only): $id" >&2; exit 2 ;;
+esac
+
+path="$trees/task-$id"
+branch="sdd/$slug/task-$id"
+
+case "$cmd" in
+  add)
+    [ ! -e "$path" ] || { echo "worktree already exists: $path" >&2; exit 2; }
+    if git -C "$repo" show-ref --verify --quiet "refs/heads/$branch"; then
+      echo "branch already exists: $branch (an earlier run of this task? merge or remove it first)" >&2
+      exit 2
+    fi
+    base=$(git -C "$repo" rev-parse HEAD)
+    mkdir -p "$trees"
+    git -C "$repo" worktree add -q -b "$branch" "$path" "$base"
+    printf 'path=%s\nbranch=%s\nbase=%s\n' "$path" "$branch" "$base"
+    ;;
+  merge)
+    git -C "$repo" show-ref --verify --quiet "refs/heads/$branch" || { echo "no such branch: $branch" >&2; exit 2; }
+    if [ -d "$path" ] && [ -n "$(git -C "$path" status --porcelain)" ]; then
+      echo "uncommitted changes in $path: the task is not finished" >&2
+      exit 2
+    fi
+    if git -C "$repo" merge-base --is-ancestor "$branch" HEAD; then
+      echo "already merged: $branch"
+      exit 0
+    fi
+    if git -C "$repo" merge --no-ff --no-edit -q -m "Merge task $id ($branch)" "$branch"; then
+      printf 'merged=%s\nhead=%s\n' "$branch" "$(git -C "$repo" rev-parse HEAD)"
+    else
+      files=$(git -C "$repo" diff --name-only --diff-filter=U | tr '\n' ' ')
+      git -C "$repo" merge --abort
+      echo "conflict merging $branch (merge aborted). Conflicting files: $files" >&2
+      exit 3
+    fi
+    ;;
+  remove)
+    # Refuse before touching anything: an unmerged branch is unfinished or
+    # unintegrated work, and its worktree is where that work can be resumed.
+    if git -C "$repo" show-ref --verify --quiet "refs/heads/$branch" \
+       && ! git -C "$repo" merge-base --is-ancestor "$branch" HEAD; then
+      echo "branch not merged, nothing removed: $branch" >&2
+      exit 3
+    fi
+    if [ -d "$path" ]; then
+      git -C "$repo" worktree remove --force "$path"
+    fi
+    git -C "$repo" worktree prune
+    if git -C "$repo" show-ref --verify --quiet "refs/heads/$branch"; then
+      git -C "$repo" branch -q -d "$branch"
+    fi
+    echo "removed task-$id"
+    ;;
+  *) usage ;;
+esac
