@@ -1,17 +1,17 @@
 ---
 name: subagent-driven-development
-description: Use when executing implementation plans with independent tasks in the current session
+description: Use when executing implementation plans with independent tasks in the current session - dispatches a fresh implementer and reviewer per task, and runs the tasks the plan's graph marks as independent at the same time, each in its own worktree
 ---
 
 # Subagent-Driven Development
 
 Answer the user in the language they write to you in, not the language this skill is written in.
 
-Execute plan by dispatching a fresh implementer subagent per task, a task review (spec compliance + code quality) after each, and a broad whole-branch review at the end.
+Execute plan by dispatching a fresh implementer subagent per task, a task review (spec compliance + code quality) after each, and a broad whole-branch review at the end. The plan is a graph: tasks that don't depend on each other run at the same time, each in its own worktree, and merge back when their review is clean.
 
 **Why subagents:** You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
 
-**Core principle:** Fresh subagent per task + task review (spec + quality) + broad final review = high quality, fast iteration
+**Core principle:** Fresh subagent per task + task review (spec + quality) + broad final review = high quality, fast iteration. Independent tasks in parallel = the same quality in less wall-clock time.
 
 **Narration:** between tool calls, narrate at most one short line — the
 ledger and the tool results carry the record.
@@ -55,6 +55,7 @@ digraph when_to_use {
 **vs. Executing Plans (inline):**
 - Fresh subagent per task (no context pollution) instead of one context doing every task
 - Review after each task (spec compliance + code quality) instead of only at the end
+- Independent tasks run in parallel; inline runs them one at a time in task order
 - Costs a fresh context per task and per review; inline costs one context plus one final reviewer
 - Both run in this session, share the same plan workspace and ledger, and never pause between tasks
 
@@ -77,12 +78,14 @@ digraph process {
     }
 
     "Setup: worktree, ledger check, read plan, pre-flight review" [shape=box];
+    "Ready set: tasks whose dependencies are merged (references/parallel-tasks.md)" [shape=box];
     "More tasks remain?" [shape=diamond];
     "Final review and finish: read references/final-review.md" [shape=box];
     "Final review clean: delete this plan's workspace" [shape=box];
     "Finish the branch: ask your human partner how to integrate it" [shape=box style=filled fillcolor=lightgreen];
 
-    "Setup: worktree, ledger check, read plan, pre-flight review" -> "Dispatch implementer subagent (./implementer-prompt.md)";
+    "Setup: worktree, ledger check, read plan, pre-flight review" -> "Ready set: tasks whose dependencies are merged (references/parallel-tasks.md)";
+    "Ready set: tasks whose dependencies are merged (references/parallel-tasks.md)" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="one per ready task; own worktree each when 2+"];
     "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer asks questions?";
     "Implementer asks questions?" -> "Answer questions, provide context" [label="yes"];
     "Answer questions, provide context" -> "Implementer implements, tests, commits, self-reviews";
@@ -92,8 +95,8 @@ digraph process {
     "Spec ✅ and quality approved?" -> "Append completion to ledger, mark todo complete" [label="yes"];
     "Spec ✅ and quality approved?" -> "Fix loop: read references/fix-loop.md before every round" [label="no"];
     "Fix loop: read references/fix-loop.md before every round" -> "Append completion to ledger, mark todo complete" [label="addressed, or parked at the cap"];
-    "Append completion to ledger, mark todo complete" -> "More tasks remain?";
-    "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
+    "Append completion to ledger, mark todo complete" -> "More tasks remain?" [label="parallel task: only once merged, suite green, worktree removed"];
+    "More tasks remain?" -> "Ready set: tasks whose dependencies are merged (references/parallel-tasks.md)" [label="yes"];
     "More tasks remain?" -> "Final review and finish: read references/final-review.md" [label="no"];
     "Final review and finish: read references/final-review.md" -> "Final review clean: delete this plan's workspace";
     "Final review clean: delete this plan's workspace" -> "Finish the branch: ask your human partner how to integrate it";
@@ -130,8 +133,9 @@ a ledger file, not only in todos.
 - `git clean -fdx` will destroy the workspace (it's git-ignored scratch); if
   that happens, recover from `git log`.
 
-Read the plan once, note its context and Global Constraints, and create a
-todo per task. If the plan names a Spec, read that too: the spec is the
+Read the plan once, note its context, Global Constraints and Task Graph
+(the wave table in the header and each task's `Depends on:` line), and
+create a todo per task. If the plan names a Spec, read that too: the spec is the
 authority the plan argues from, and conflicts inside the plan resolve
 against it. A plan with no reachable spec gets a ledger note saying so —
 rulings made without one are provisional.
@@ -179,6 +183,15 @@ that implementer. Single-file mechanical fixes also take the cheapest tier.
 
 ## The Task Loop
 
+**Which task next:** the plan's graph decides. A task is ready when
+everything it depends on is merged; when two or more are ready, they run
+at the same time. Read
+[references/parallel-tasks.md](references/parallel-tasks.md) before the
+first dispatch and every time more than one task is ready: it holds the
+ready-set rule, the worktree per task, the merge and the suite run after
+it. The steps below are what each task goes through, alone or alongside
+others.
+
 **Small same-shape work:** when the plan lists several small edits of the
 same kind across files, read [references/batching.md](references/batching.md)
 before dispatching them.
@@ -201,7 +214,9 @@ child is noticed within minutes, not at the end of the session.
 ### 1. Dispatch the implementer
 
 Record BASE (`git rev-parse HEAD`) before dispatching — the review package
-and fix-round diffs need it.
+and fix-round diffs need it. For a task in its own worktree, BASE is the
+`base=` line `task-worktree add` printed, and the range's HEAD is the
+task's branch.
 
 - **Task brief:** before dispatching an implementer, run this skill's
   `bash scripts/task-brief PLAN_FILE N` by its absolute path, from the
@@ -235,7 +250,11 @@ and fix-round diffs need it.
   a pointer to that ledger entry in the dispatch.
 - Record the implementer's agent identity from the dispatch result —
   fix-loop rounds 1-3 resume this agent.
-- Never dispatch multiple implementation subagents in parallel (conflicts).
+- Never put two implementers in the same working tree at the same time:
+  they trip over each other's half-written files, commits and test runs.
+  Parallel tasks each get their own worktree
+  (`bash scripts/task-worktree add PLAN_FILE N`), and only tasks the
+  plan's graph marks as independent run in parallel.
 
 Template: [implementer-prompt.md](implementer-prompt.md)
 
@@ -316,6 +335,9 @@ message as your other bookkeeping:
 - `Task <N>: complete (commits <base7>..<head7>, review clean)`
 - `Task <N>: complete (commits <base7>..<head7>, <K> parked)` after a
   tripped breaker
+- a task that ran in its own worktree is complete only once it is merged
+  and the suite is green: `Task <N>: complete (merged <merge7>, commits
+  <base7>..<head7>, review clean)`
 
 Then mark the todo complete and move on. Never move to the next task while
 the review has open Critical/Important issues that are neither fixed nor
@@ -339,4 +361,8 @@ covers the whole-branch review, its single fix wave, and how you finish.
 | "The fix was small, skip the re-review" | Unreviewed fixes are how regressions land. Every round ends with a scoped re-review. |
 | "Reviews slow the loop down" | The loop without reviews is just unverified churn. Reviews are the loop's brakes and steering. |
 | "Ledger bookkeeping is overhead" | The ledger is what survives compaction. Controllers without one have re-dispatched entire completed task sequences. |
+| "These two tasks look independent, I'll run them together" | The plan's graph decides, not a glance. No `Depends on:` path and disjoint files, or they run in order. |
+| "Worktrees are overhead, they can share the tree" | Shared trees give you a neighbor's half-written file in your test run and its commits in your review range. One worktree per running task. |
+| "Both passed their reviews, skip the suite after the merge" | Each passed against an older base. The run after the merge is the only place their interaction is tested. |
+| "The conflict is trivial, I'll resolve it myself" | A conflict is a missing edge in the plan. Ledger it and send it to the implementer who knows the code. |
 | "The implementer spawned its own reviewer — free extra assurance" | It's a duplicate seat reviewing the same diff; the task review is the gate. A worker-spawned reviewer is a defect to flag, not rigor. |

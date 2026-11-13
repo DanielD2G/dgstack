@@ -9,7 +9,7 @@ Answer the user in the language they write to you in, not the language this skil
 
 ## Overview
 
-Write implementation plans for an engineer who has not seen this codebase or this spec. Assume they write idiomatic code in the project's language once they know the exact interface and the exact test, and that they will make a reasonable choice wherever the plan leaves one open. What they cannot know is what you decided: which files, which names and signatures, which values from the spec, which tests prove each task. Document those. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
+Write implementation plans for an engineer who has not seen this codebase or this spec. Assume they write idiomatic code in the project's language once they know the exact interface and the exact test, and that they will make a reasonable choice wherever the plan leaves one open. What they cannot know is what you decided: which files, which names and signatures, which values from the spec, which tests prove each task. Document those. Give them the whole plan as bite-sized tasks arranged as a dependency graph, so tasks that don't need each other can be built at the same time. DRY. YAGNI. TDD. Frequent commits.
 
 **Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
 
@@ -80,6 +80,54 @@ deliverable needs them; split only where a reviewer could meaningfully
 reject one task while approving its neighbor. Each task ends with an
 independently testable deliverable.
 
+## Task Graph
+
+A plan is a graph, not a list. Each task says which tasks it depends on,
+and tasks with no path between them can be built at the same time by
+different implementers. Think in the graph from the start: it decides
+where task boundaries go, not just the order they run in.
+
+**An edge exists when** task B needs something task A leaves behind:
+
+- B consumes an interface, type, schema, migration or config A produces;
+- B touches a file A creates or modifies (tests, barrel/index files,
+  route registries, translation files, lockfiles and generated files
+  count);
+- B's tests need A's behavior to exist;
+- both need the same exclusive resource (the next migration number, a
+  port, a fixture they both rewrite).
+
+**The rule that makes parallel work safe:** two tasks with no dependency
+path between them touch disjoint files and neither consumes what the
+other produces. If two tasks share a file, one depends on the other.
+There are no exceptions to this; an implementer in its own worktree
+cannot see what its neighbor is writing.
+
+**Design for width, honestly.** After a first pass, look at each edge and
+ask whether it is real or an accident of how you cut the tasks:
+
+- When several tasks would all touch one shared file (a types file, a
+  router, a schema), pull that shared piece into an earlier task of its
+  own: define the interfaces, register the routes, add the columns. The
+  tasks after it then fan out in parallel, each in its own files.
+- When two tasks only meet at an interface, put the exact signatures in
+  the earlier task's Produces block, so both sides can be written against
+  it without waiting for each other's bodies.
+- Don't invent parallelism. A chain is the right shape for work that is
+  a chain, and a false "independent" costs a merge conflict or two
+  implementations of the same thing. When unsure whether two tasks are
+  independent, add the edge.
+
+Number the tasks in an order that respects the edges (a task's number is
+higher than every task it depends on), so the plan still reads top to
+bottom and can be executed one task at a time.
+
+Then group them into **waves** for the reader: wave 1 is every task with
+no dependencies; each later wave is every task whose dependencies all
+sit in earlier waves. The waves go in the plan header as a table (see
+Plan Document Header). Each task's own `Depends on:` line is the source
+of truth; the table is the picture.
+
 ## Step Granularity
 
 **Each step is one action with a checkable result:**
@@ -114,6 +162,18 @@ naming and copy rules, platform requirements — one line each, with exact
 values copied verbatim from the spec. Every task's requirements implicitly
 include this section.]
 
+## Task Graph
+
+[One row per wave. Tasks in the same wave have no dependency path
+between them and touch disjoint files, so they can be implemented at
+the same time. A wave with one task is fine.]
+
+| Wave | Tasks | Needs |
+|------|-------|-------|
+| 1 | Task 1 | nothing |
+| 2 | Task 2, Task 3 | Task 1 |
+| 3 | Task 4 | Task 2, Task 3 |
+
 ## Review Focus
 
 [The five input classes or failure modes the spec implies but no task's
@@ -133,6 +193,9 @@ owns the code, in that task's own step style.]
 
 ````markdown
 ### Task N: [Component Name]
+
+**Depends on:** [Task numbers this task needs finished first, or "none".
+Every task whose output it consumes or whose files it touches.]
 
 **Files:**
 - Create: `exact/path/to/file.py`
@@ -218,11 +281,13 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 **3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 
-**4. Review Focus:** For each input class or failure mode the spec implies, is there a task whose tests exercise it? The five uncovered ones most likely to bite a person go in the Review Focus section, and each line there gets its test added to the owning task. An empty section means you checked and found none, not that you skipped the check.
+**4. Task graph:** For every pair of tasks with no dependency path between them, compare their Files lists: any shared file means a missing edge. Check each task's Consumes against its `Depends on:` (it may only consume from tasks it depends on, directly or through them), that no task depends on a higher-numbered one, and that the header's wave table matches the `Depends on:` lines. Then look once more for width: is there a shared file or interface you could pull into an earlier task so that the tasks behind it stop depending on each other?
 
-**5. UI coverage:** Every row of the UI map maps to a task (a skipped drawing is still a change to build); every flow step has its own task or a task that names it; every UI task has a UI block with an existing mockup path or the skip rule; no task touches a UI component the map doesn't list.
+**5. Review Focus:** For each input class or failure mode the spec implies, is there a task whose tests exercise it? The five uncovered ones most likely to bite a person go in the Review Focus section, and each line there gets its test added to the owning task. An empty section means you checked and found none, not that you skipped the check.
 
-**6. Proportion:** Compare the plan's length to the spec's. A plan several times longer than the spec it implements is a transcript of the program, not a plan. If code blocks are most of the document, replace bodies with signatures, test names and assertions, and check that each step is still unambiguous.
+**6. UI coverage:** Every row of the UI map maps to a task (a skipped drawing is still a change to build); every flow step has its own task or a task that names it; every UI task has a UI block with an existing mockup path or the skip rule; no task touches a UI component the map doesn't list.
+
+**7. Proportion:** Compare the plan's length to the spec's. A plan several times longer than the spec it implements is a transcript of the program, not a plan. If code blocks are most of the document, replace bodies with signatures, test names and assertions, and check that each step is still unambiguous.
 
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
@@ -238,10 +303,10 @@ them to review the plan and choose an execution method before implementation.
 
 **"Plan complete and saved to `docs/dgpowers/plans/<filename>.md`. Please review the plan. Which execution approach would you prefer?**
 
-- **Subagent-driven** - A fresh subagent implements each task and a fresh reviewer checks it before the next one starts, then a whole-branch review at the end. Most thorough; costs a fresh context per task and per review.
-- **Native** - I implement every task myself in this session, the way this harness runs work, then one fresh reviewer on the most capable model checks the whole branch. Cheapest and fastest; no independent review until the end. Runs well with a mid-tier session model, since the plan carries the design.
+- **Subagent-driven** - A fresh subagent implements each task and a fresh reviewer checks it, then a whole-branch review at the end. Tasks in the same wave of the plan's graph run at the same time, each in its own worktree. Most thorough, and the fastest on a wide graph; costs a fresh context per task and per review.
+- **Native** - I implement every task myself in this session, one at a time in task order, then one fresh reviewer on the most capable model checks the whole branch. Cheapest and fastest; no independent review until the end. Runs well with a mid-tier session model, since the plan carries the design.
 
-**For this plan I recommend <one of the two>, because <one sentence from the plan: how much the tasks depend on each other's interfaces, how many there are, what a shipped mistake would cost>. Does the plan capture what you want, and which approach should we use?"**
+**For this plan I recommend <one of the two>, because <one sentence from the plan: how wide its graph is (how many tasks can run at once), how much the tasks depend on each other's interfaces, what a shipped mistake would cost>. Does the plan capture what you want, and which approach should we use?"**
 
 **When an execution method has already been supplied:**
 

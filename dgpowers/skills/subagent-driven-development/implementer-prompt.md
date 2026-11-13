@@ -41,6 +41,13 @@ Subagent (general-purpose):
 
     Work from: [directory]
 
+    [For a task running in parallel with others, add:]
+    This directory is your own git worktree, on your own branch. Other
+    tasks are being built at the same time in other worktrees. Work and
+    commit only here. Touch only the files your task lists: if you find
+    you need to change a file outside that list, stop and report
+    NEEDS_CONTEXT, because another task may own it.
+
     **If the task has a UI block:** open its mockup file before writing any
     UI code and build to it: same layout, grouping, copy and states, with
     the project's existing components and tokens. Don't add anything to the

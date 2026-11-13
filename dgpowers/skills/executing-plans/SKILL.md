@@ -59,7 +59,9 @@ capable model earns its cost is the final review, which this skill
 dispatches separately. Tell your human partner so when they choose inline.
 
 Prefer subagent-driven-development when your human partner
-wants a review gate on every task, or when the plan is long enough that
+wants a review gate on every task, when the plan's Task Graph is wide
+(several tasks per wave: it runs those at the same time, and you can
+only do one at a time), or when the plan is long enough that
 its later tasks would run on a compacted context. Inline execution over a
 long plan still works — the ledger is what makes it recoverable — but the
 last tasks get the least of you.
@@ -183,6 +185,12 @@ in the workspace and read its tail; read a brief, not the whole plan.
 Every tool call is a turn that re-reads your whole context. Bookkeeping
 rides along with work — a ledger append in the same call as the commit,
 never in a call of its own.
+
+**Task order:** you are one implementer, so the plan's graph gives you
+an order, not parallelism. Work the tasks in task-number order, which
+already respects every `Depends on:` line. If a task's dependency isn't
+complete in the ledger, the numbering is wrong: do the dependency first
+and ledger the ruling.
 
 ### 2. Work the steps
 

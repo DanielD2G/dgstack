@@ -9,6 +9,11 @@ what you checked as you check it:
 - tasks that contradict each other or the plan's Global Constraints
 - anything the plan explicitly mandates that the review rubric treats as a
   defect (a test that asserts nothing, verbatim duplication of a logic block)
+- the task graph: two tasks with no dependency path between them that
+  share a file, or where one consumes what the other produces, are a
+  missing edge. Rule by adding the edge (they run in order) and ledger it;
+  a task that depends on a higher-numbered task, or a wave table that
+  disagrees with the `Depends on:` lines, gets the same treatment
 
 The scan's output is a table, not a verdict. One row for every pair of tasks
 that share a file or an interface: the two tasks, what one produces against
